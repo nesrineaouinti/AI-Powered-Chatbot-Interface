@@ -1,0 +1,29 @@
+/* Additional app-specific styles */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10;
+}
+
+.glass-effect {
+  @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20;
+}
+
+.feature-card {
+  @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
