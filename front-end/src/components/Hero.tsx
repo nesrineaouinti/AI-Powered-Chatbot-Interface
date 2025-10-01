@@ -1,10 +1,23 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowRight, Sparkles, Zap, Shield } from 'lucide-react';
 
 const Hero: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/signup');
+  };
+
+  const handleLearnMore = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-bg">
@@ -20,27 +33,27 @@ const Hero: React.FC = () => {
           {/* Badge */}
           <div className="inline-flex items-center space-x-2 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-full px-4 py-2 mb-8 animate-fade-in">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Powered by Advanced AI</span>
+            <span className="text-sm font-medium text-primary">{t('hero.badge')}</span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <span className="gradient-text">{t('heroTitle')}</span>
+            <span className="gradient-text">{t('hero.title')}</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            {t('heroSubtitle')}
+            {t('hero.subtitle')}
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <Button size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all group">
-              {t('getStarted')}
+            <Button size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all group" onClick={handleGetStarted}>
+              {t('hero.getStarted')}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-              {t('learnMore')}
+            <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={handleLearnMore}>
+              {t('hero.learnMore')}
             </Button>
           </div>
 
@@ -48,15 +61,15 @@ const Hero: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-6 animate-fade-in" style={{ animationDelay: '0.8s' }}>
             <div className="flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-md">
               <Zap className="h-5 w-5 text-yellow-500" />
-              <span className="font-medium">Lightning Fast</span>
+              <span className="font-medium">{t('hero.pills.fast')}</span>
             </div>
             <div className="flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-md">
               <Shield className="h-5 w-5 text-green-500" />
-              <span className="font-medium">Secure & Private</span>
+              <span className="font-medium">{t('hero.pills.secure')}</span>
             </div>
             <div className="flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-md">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-medium">AI-Powered</span>
+              <span className="font-medium">{t('hero.pills.aiPowered')}</span>
             </div>
           </div>
         </div>

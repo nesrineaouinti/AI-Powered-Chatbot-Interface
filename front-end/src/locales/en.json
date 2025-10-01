@@ -1,0 +1,203 @@
+{
+  "navigation": {
+    "home": "Home",
+    "features": "Features",
+    "about": "About",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "profile": "Profile",
+    "chatbot": "Chatbot"
+  },
+  "hero": {
+    "title": "Your Intelligent AI Assistant",
+    "subtitle": "Experience the future of conversation with our advanced AI chatbot. Get instant answers, personalized assistance, and seamless interactions.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "badge": "Powered by Advanced AI",
+    "pills": {
+      "fast": "Lightning Fast",
+      "secure": "Secure & Private",
+      "aiPowered": "AI-Powered"
+    }
+  },
+  "features": {
+    "title": "Powerful Features",
+    "subtitle": "Everything you need for intelligent conversations",
+    "feature1": {
+      "title": "24/7 Availability",
+      "description": "Get instant responses anytime, anywhere. Our AI never sleeps."
+    },
+    "feature2": {
+      "title": "Multi-Language Support",
+      "description": "Communicate in your preferred language with seamless translation."
+    },
+    "feature3": {
+      "title": "Smart Context Understanding",
+      "description": "Advanced AI that understands context and provides relevant answers."
+    },
+    "feature4": {
+      "title": "Secure & Private",
+      "description": "Your conversations are encrypted and your privacy is our priority."
+    },
+    "feature5": {
+      "title": "Personalized Experience",
+      "description": "AI learns from your preferences to provide tailored responses."
+    },
+    "feature6": {
+      "title": "Fast & Efficient",
+      "description": "Lightning-fast responses powered by cutting-edge technology."
+    }
+  },
+  "about": {
+    "title": "About Our Platform",
+    "subtitle": "Building the future of AI-powered communication",
+    "description": "We are dedicated to creating intelligent solutions that enhance human-AI interaction. Our chatbot leverages state-of-the-art natural language processing to understand and respond to your needs with unprecedented accuracy and efficiency.",
+    "mission": {
+      "title": "Our Mission",
+      "description": "To make AI accessible and beneficial for everyone through intuitive and powerful conversational interfaces."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "A world where AI seamlessly integrates into daily life, empowering people with instant knowledge and assistance."
+    },
+    "stats": {
+      "industryLeading": {
+        "title": "Industry Leading",
+        "description": "Recognized for excellence in AI innovation"
+      },
+      "users": {
+        "title": "100K+ Users",
+        "description": "Trusted by individuals and businesses worldwide"
+      },
+      "satisfaction": {
+        "title": "98% Satisfaction",
+        "description": "Consistently high user satisfaction ratings"
+      }
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Welcome back! Sign in to continue",
+      "description": "Enter your credentials to access your account",
+      "button": "Sign In",
+      "noAccount": "Don't have an account?",
+      "backToHome": "← Back to home"
+    },
+    "signUp": {
+      "title": "Create Account",
+      "subtitle": "Create your account to get started",
+      "description": "Sign up to start chatting with our AI assistant",
+      "button": "Create Account",
+      "haveAccount": "Already have an account?"
+    },
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm Password",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "passwordHint": "Must be at least 8 characters"
+    },
+    "options": {
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Remember me for 30 days",
+      "orContinueWith": "Or continue with",
+      "orSignUpWith": "Or sign up with",
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "terms": {
+      "agreeToTerms": "I agree to the",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy"
+    }
+  },
+  "chat": {
+    "newChat": "New Chat",
+    "createChat": "Create Chat",
+    "chatHistory": "Chat History",
+    "deleteChat": "Delete Chat",
+    "clearHistory": "Clear History",
+    "typeMessage": "Type your message...",
+    "send": "Send",
+    "emptyState": {
+      "title": "Start a New Conversation",
+      "description": "Select a chat from the sidebar or create a new one"
+    },
+    "timeGroups": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "lastWeek": "Last 7 Days",
+      "older": "Older"
+    }
+  },
+  "chatbot": {
+    "title": "AI Assistant",
+    "selectModel": "Select AI Model",
+    "models": {
+      "gpt4": "GPT-4 (Most Capable)",
+      "gpt35": "GPT-3.5 (Balanced)",
+      "claude": "Claude (Creative)"
+    }
+  },
+  "profile": {
+    "myProfile": "My Profile",
+    "aiSummary": "AI-Generated Summary",
+    "interests": "Your Interests",
+    "commonQueries": "Common Queries",
+    "stats": {
+      "totalChats": "Total Chats",
+      "favoriteModel": "Favorite Model",
+      "memberSince": "Member Since"
+    },
+    "actions": {
+      "editProfile": "Edit Profile",
+      "settings": "Settings"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "viewMore": "View More",
+    "viewLess": "View Less"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "validation": "Please check your input and try again.",
+    "serverError": "Server error. Please try again later.",
+    "timeout": "Request timed out. Please try again.",
+    "invalidCredentials": "Invalid email or password. Please try again.",
+    "googleAuthFailed": "Google authentication failed. Please try again.",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "signupFailed": "Sign up failed. Please try again.",
+    "emailAlreadyExists": "This email is already registered.",
+    "weakPassword": "Password is too weak. Please use a stronger password."
+  },
+  "messages": {
+    "chatCreated": "Chat created successfully",
+    "chatDeleted": "Chat deleted successfully",
+    "profileUpdated": "Profile updated successfully",
+    "settingsSaved": "Settings saved successfully",
+    "messageSent": "Message sent",
+    "copySuccess": "Copied to clipboard",
+    "copyError": "Failed to copy"
+  }
+}

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import EditProfileDialog from '@/components/EditProfileDialog';
 import {
   User,
   MessageSquare,
@@ -16,15 +18,13 @@ import {
 
 const Profile: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const { user, logout } = useAuth();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // Mock user data (replace with actual user data from context/API)
-  const userData = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    memberSince: 'January 2024',
+  // Mock stats data (can be fetched from API later)
+  const statsData = {
     totalChats: 127,
     favoriteModel: 'GPT-4',
-    avatar: null,
   };
 
   // Mock AI-generated summary (replace with actual AI-generated content)
@@ -72,7 +72,7 @@ const Profile: React.FC = () => {
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{t('myProfile')}</h1>
+          <h1 className="text-4xl font-bold mb-2">{t('profile.myProfile')}</h1>
           <p className="text-muted-foreground">
             {isRTL
               ? 'عرض وإدارة معلومات ملفك الشخصي'
@@ -87,25 +87,45 @@ const Profile: React.FC = () => {
             <Card>
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-                    <User className="h-12 w-12 text-white" />
-                  </div>
+                  {user?.profile_picture ? (
+                    <img
+                      src={user.profile_picture}
+                      alt={user.username}
+                      className="w-24 h-24 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                      <User className="h-12 w-12 text-white" />
+                    </div>
+                  )}
                 </div>
-                <CardTitle className="text-2xl">{userData.name}</CardTitle>
-                <CardDescription>{userData.email}</CardDescription>
+                <CardTitle className="text-2xl">
+                  {user?.first_name && user?.last_name
+                    ? `${user.first_name} ${user.last_name}`
+                    : user?.username || 'User'}
+                </CardTitle>
+                <CardDescription>{user?.email || 'No email'}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(true)}
+                >
                   <Edit className="h-4 w-4 mr-2" />
-                  {t('editProfile')}
+                  {t('profile.actions.editProfile')}
                 </Button>
                 <Button className="w-full" variant="outline">
                   <SettingsIcon className="h-4 w-4 mr-2" />
-                  {t('settings')}
+                  {t('profile.actions.settings')}
                 </Button>
-                <Button className="w-full" variant="destructive">
+                <Button 
+                  className="w-full" 
+                  variant="destructive"
+                  onClick={logout}
+                >
                   <LogOut className="h-4 w-4 mr-2" />
-                  {t('logout')}
+                  {t('navigation.logout')}
                 </Button>
               </CardContent>
             </Card>
@@ -119,23 +139,30 @@ const Profile: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <MessageSquare className="h-5 w-5 text-primary" />
-                    <span className="text-sm">{t('totalChats')}</span>
+                    <span className="text-sm">{t('profile.stats.totalChats')}</span>
                   </div>
-                  <span className="font-bold">{userData.totalChats}</span>
+                  <span className="font-bold">{statsData.totalChats}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Bot className="h-5 w-5 text-primary" />
-                    <span className="text-sm">{t('favoriteModel')}</span>
+                    <span className="text-sm">{t('profile.stats.favoriteModel')}</span>
                   </div>
-                  <span className="font-bold">{userData.favoriteModel}</span>
+                  <span className="font-bold">{statsData.favoriteModel}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Calendar className="h-5 w-5 text-primary" />
-                    <span className="text-sm">{t('memberSince')}</span>
+                    <span className="text-sm">{t('profile.stats.memberSince')}</span>
                   </div>
-                  <span className="font-bold text-sm">{userData.memberSince}</span>
+                  <span className="font-bold text-sm">
+                    {user?.created_at 
+                      ? new Date(user.created_at).toLocaleDateString(isRTL ? 'ar' : 'en', { 
+                          year: 'numeric', 
+                          month: 'long' 
+                        })
+                      : 'N/A'}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -148,7 +175,7 @@ const Profile: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <CardTitle>{t('aiSummary')}</CardTitle>
+                  <CardTitle>{t('profile.aiSummary')}</CardTitle>
                 </div>
                 <CardDescription>
                   {isRTL
@@ -170,7 +197,7 @@ const Profile: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <CardTitle>{t('interests')}</CardTitle>
+                  <CardTitle>{t('profile.interests')}</CardTitle>
                 </div>
                 <CardDescription>
                   {isRTL
@@ -197,7 +224,7 @@ const Profile: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <MessageSquare className="h-5 w-5 text-primary" />
-                  <CardTitle>{t('commonQueries')}</CardTitle>
+                  <CardTitle>{t('profile.commonQueries')}</CardTitle>
                 </div>
                 <CardDescription>
                   {isRTL
@@ -259,6 +286,12 @@ const Profile: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Edit Profile Dialog */}
+        <EditProfileDialog 
+          open={isEditDialogOpen} 
+          onOpenChange={setIsEditDialogOpen} 
+        />
       </div>
     </div>
   );

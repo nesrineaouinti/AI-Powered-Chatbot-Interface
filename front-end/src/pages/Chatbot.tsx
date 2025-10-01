@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useChat } from '@/contexts/ChatContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,38 +22,64 @@ import {
   User as UserIcon,
   Menu,
   X,
+  Loader2,
 } from 'lucide-react';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
-interface Chat {
-  id: string;
-  title: string;
-  messages: Message[];
-  model: string;
-  createdAt: Date;
-}
+import type { Chat as ChatType, Message as MessageType, AIModel } from '@/types/chat';
+import { formatDistanceToNow } from 'date-fns';
+import { ar, enUS } from 'date-fns/locale';
 
 const Chatbot: React.FC = () => {
-  const { t, isRTL } = useLanguage();
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { t, language, isRTL } = useLanguage();
+  const {
+    chats,
+    currentChat,
+    availableModels,
+    isLoading,
+    isSendingMessage,
+    loadChat,
+    createChat,
+    deleteChat,
+    sendMessage: sendMessageToBackend,
+  } = useChat();
+
+  const [selectedModel, setSelectedModel] = useState<AIModel>('groq');
   const [inputMessage, setInputMessage] = useState('');
-  const [currentChat, setCurrentChat] = useState<Chat | null>(null);
-  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize with a default chat
+  // Redirect if not authenticated
   useEffect(() => {
-    if (chatHistory.length === 0) {
-      createNewChat();
+    if (!user) {
+      navigate('/signin');
     }
-  }, []);
+  }, [user, navigate]);
+
+  // Auto-select first available model
+  useEffect(() => {
+    if (availableModels.length > 0) {
+      // Select the highest priority active model
+      const topModel = availableModels[0];
+      setSelectedModel(topModel.name);
+    }
+  }, [availableModels]);
+
+  // Get top 3 models for display (prioritize active models with API keys)
+  const getDisplayModels = () => {
+    if (availableModels.length > 0) {
+      // Return top 3 active models
+      return availableModels.slice(0, 3);
+    }
+    
+    // Fallback: Show free/open-source models if no API keys configured
+    return [
+      { name: 'groq', supports_english: true, supports_arabic: true, priority: 10 },
+      { name: 'other', supports_english: true, supports_arabic: true, priority: 0 },
+    ];
+  };
+
+  const displayModels = getDisplayModels();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,82 +89,47 @@ const Chatbot: React.FC = () => {
     scrollToBottom();
   }, [currentChat?.messages]);
 
-  const createNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: t('newChat'),
-      messages: [],
-      model: selectedModel,
-      createdAt: new Date(),
-    };
-    setChatHistory([newChat, ...chatHistory]);
-    setCurrentChat(newChat);
+  const handleCreateNewChat = async () => {
+    if (isLoading) return;
+    
+    try {
+      const newChat = await createChat(language);
+      if (newChat) {
+        console.log('Chat created successfully:', newChat);
+      }
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+    }
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || !currentChat) return;
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !currentChat || isSendingMessage) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: inputMessage,
-      timestamp: new Date(),
-    };
-
-    // Update current chat with user message
-    const updatedChat = {
-      ...currentChat,
-      messages: [...currentChat.messages, userMessage],
-      title: currentChat.messages.length === 0 ? inputMessage.substring(0, 30) + '...' : currentChat.title,
-    };
-
-    setCurrentChat(updatedChat);
+    const messageContent = inputMessage;
     setInputMessage('');
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: generateMockResponse(inputMessage, selectedModel),
-        timestamp: new Date(),
-      };
-
-      const finalChat = {
-        ...updatedChat,
-        messages: [...updatedChat.messages, aiMessage],
-      };
-
-      setCurrentChat(finalChat);
-      updateChatInHistory(finalChat);
-    }, 1000);
+    try {
+      await sendMessageToBackend(currentChat.id, messageContent, language, selectedModel);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // Restore input on error
+      setInputMessage(messageContent);
+    }
   };
 
-  const generateMockResponse = (query: string, model: string): string => {
-    const responses = {
-      'gpt-4': `This is a response from GPT-4. You asked: "${query}". GPT-4 is the most capable model with advanced reasoning abilities.`,
-      'gpt-3.5': `This is a response from GPT-3.5. You asked: "${query}". GPT-3.5 offers a good balance between capability and speed.`,
-      'claude': `This is a response from Claude. You asked: "${query}". Claude excels at creative and nuanced conversations.`,
-    };
-    return responses[model as keyof typeof responses] || responses['gpt-4'];
+  const handleSelectChat = async (chat: ChatType) => {
+    try {
+      await loadChat(chat.id);
+    } catch (error) {
+      console.error('Failed to load chat:', error);
+    }
   };
 
-  const updateChatInHistory = (updatedChat: Chat) => {
-    setChatHistory(chatHistory.map(chat => 
-      chat.id === updatedChat.id ? updatedChat : chat
-    ));
-  };
-
-  const selectChat = (chat: Chat) => {
-    setCurrentChat(chat);
-    setSelectedModel(chat.model);
-  };
-
-  const deleteChat = (chatId: string) => {
-    const newHistory = chatHistory.filter(chat => chat.id !== chatId);
-    setChatHistory(newHistory);
-    if (currentChat?.id === chatId) {
-      setCurrentChat(newHistory[0] || null);
+  const handleDeleteChat = async (chatId: number) => {
+    try {
+      await deleteChat(chatId);
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
     }
   };
 
@@ -147,21 +141,39 @@ const Chatbot: React.FC = () => {
     const lastWeek = new Date(today);
     lastWeek.setDate(lastWeek.getDate() - 7);
 
+    // Safety check: ensure chats is an array
+    const chatList = Array.isArray(chats) ? chats : [];
+    
+    console.log('Chatbot: groupChatsByDate - chats from context:', chats);
+    console.log('Chatbot: chatList length:', chatList.length);
+
     return {
-      today: chatHistory.filter(chat => new Date(chat.createdAt) >= today),
-      yesterday: chatHistory.filter(chat => {
-        const date = new Date(chat.createdAt);
+      today: chatList.filter(chat => new Date(chat.created_at) >= today),
+      yesterday: chatList.filter(chat => {
+        const date = new Date(chat.created_at);
         return date >= yesterday && date < today;
       }),
-      lastWeek: chatHistory.filter(chat => {
-        const date = new Date(chat.createdAt);
+      lastWeek: chatList.filter(chat => {
+        const date = new Date(chat.created_at);
         return date >= lastWeek && date < yesterday;
       }),
-      older: chatHistory.filter(chat => new Date(chat.createdAt) < lastWeek),
+      older: chatList.filter(chat => new Date(chat.created_at) < lastWeek),
     };
   };
 
   const groupedChats = groupChatsByDate();
+  
+  console.log('Chatbot: Grouped chats:', {
+    today: groupedChats.today.length,
+    yesterday: groupedChats.yesterday.length,
+    lastWeek: groupedChats.lastWeek.length,
+    older: groupedChats.older.length,
+    total: groupedChats.today.length + groupedChats.yesterday.length + groupedChats.lastWeek.length + groupedChats.older.length
+  });
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-background pt-16">
@@ -172,7 +184,7 @@ const Chatbot: React.FC = () => {
         } transition-all duration-300 border-r bg-secondary/20 flex flex-col overflow-hidden`}
       >
         <div className="p-4 border-b">
-          <Button onClick={createNewChat} className="w-full" size="lg">
+          <Button onClick={handleCreateNewChat} className="w-full" size="lg" disabled={isLoading}>
             <Plus className="h-4 w-4 mr-2" />
             {t('newChat')}
           </Button>
@@ -190,8 +202,8 @@ const Chatbot: React.FC = () => {
                     key={chat.id}
                     chat={chat}
                     isActive={currentChat?.id === chat.id}
-                    onSelect={() => selectChat(chat)}
-                    onDelete={() => deleteChat(chat.id)}
+                    onSelect={() => handleSelectChat(chat)}
+                    onDelete={() => handleDeleteChat(chat.id)}
                   />
                 ))}
               </div>
@@ -207,8 +219,8 @@ const Chatbot: React.FC = () => {
                     key={chat.id}
                     chat={chat}
                     isActive={currentChat?.id === chat.id}
-                    onSelect={() => selectChat(chat)}
-                    onDelete={() => deleteChat(chat.id)}
+                    onSelect={() => handleSelectChat(chat)}
+                    onDelete={() => handleDeleteChat(chat.id)}
                   />
                 ))}
               </div>
@@ -224,8 +236,8 @@ const Chatbot: React.FC = () => {
                     key={chat.id}
                     chat={chat}
                     isActive={currentChat?.id === chat.id}
-                    onSelect={() => selectChat(chat)}
-                    onDelete={() => deleteChat(chat.id)}
+                    onSelect={() => handleSelectChat(chat)}
+                    onDelete={() => handleDeleteChat(chat.id)}
                   />
                 ))}
               </div>
@@ -241,8 +253,8 @@ const Chatbot: React.FC = () => {
                     key={chat.id}
                     chat={chat}
                     isActive={currentChat?.id === chat.id}
-                    onSelect={() => selectChat(chat)}
-                    onDelete={() => deleteChat(chat.id)}
+                    onSelect={() => handleSelectChat(chat)}
+                    onDelete={() => handleDeleteChat(chat.id)}
                   />
                 ))}
               </div>
@@ -267,14 +279,32 @@ const Chatbot: React.FC = () => {
           </div>
 
           <div className="w-64">
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <Select 
+              value={selectedModel} 
+              onValueChange={(value) => setSelectedModel(value as AIModel)}
+            >
               <SelectTrigger>
-                <SelectValue placeholder={t('selectModel')} />
+                <SelectValue placeholder={t('selectModel') || 'Select AI Model'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="gpt-4">{t('gpt4')}</SelectItem>
-                <SelectItem value="gpt-3.5">{t('gpt35')}</SelectItem>
-                <SelectItem value="claude">{t('claude')}</SelectItem>
+                {displayModels.map((model, index) => (
+                  <SelectItem key={model.name} value={model.name}>
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-3 w-3" />
+                      <span>{model.name.charAt(0).toUpperCase() + model.name.slice(1)}</span>
+                      {index === 0 && availableModels.length > 0 && (
+                        <span className="text-xs bg-green-100 text-green-700 px-1 rounded">
+                          Recommended
+                        </span>
+                      )}
+                      {model.name === 'other' && (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-1 rounded">
+                          Free
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -283,10 +313,10 @@ const Chatbot: React.FC = () => {
         {/* Messages Area */}
         <ScrollArea className="flex-1 p-4">
           <div className="max-w-4xl mx-auto space-y-4">
-            {currentChat?.messages.length === 0 ? (
+            {!currentChat || currentChat.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-20">
                 <Bot className="h-16 w-16 text-primary mb-4" />
-                <h2 className="text-2xl font-bold mb-2">{t('chatbotTitle')}</h2>
+                <h2 className="text-2xl font-bold mb-2">{t('chatbotTitle') || 'AI Chatbot'}</h2>
                 <p className="text-muted-foreground">
                   {isRTL
                     ? 'ابدأ محادثة جديدة مع مساعدك الذكي'
@@ -294,9 +324,29 @@ const Chatbot: React.FC = () => {
                 </p>
               </div>
             ) : (
-              currentChat?.messages.map(message => (
-                <MessageBubble key={message.id} message={message} isRTL={isRTL} />
-              ))
+              <>
+                {currentChat.messages.map(message => (
+                  <MessageBubble key={message.id} message={message} isRTL={isRTL} language={language} />
+                ))}
+                {isSendingMessage && (
+                  <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <Bot className="h-5 w-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl px-4 py-3 inline-block">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -308,13 +358,22 @@ const Chatbot: React.FC = () => {
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder={t('typeMessage')}
+              onKeyPress={(e) => e.key === 'Enter' && !isSendingMessage && handleSendMessage()}
+              placeholder={t('typeMessage') || 'Type a message...'}
               className="flex-1"
               dir={isRTL ? 'rtl' : 'ltr'}
+              disabled={!currentChat || isSendingMessage}
             />
-            <Button onClick={sendMessage} size="lg">
-              <Send className="h-4 w-4" />
+            <Button 
+              onClick={handleSendMessage} 
+              size="lg"
+              disabled={!currentChat || !inputMessage.trim() || isSendingMessage}
+            >
+              {isSendingMessage ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -325,7 +384,7 @@ const Chatbot: React.FC = () => {
 
 // Chat History Item Component
 const ChatHistoryItem: React.FC<{
-  chat: Chat;
+  chat: ChatType;
   isActive: boolean;
   onSelect: () => void;
   onDelete: () => void;
@@ -339,7 +398,7 @@ const ChatHistoryItem: React.FC<{
     >
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <MessageSquare className="h-4 w-4 flex-shrink-0" />
-        <span className="text-sm truncate">{chat.title}</span>
+        <span className="text-sm truncate">{chat.title || 'New Chat'}</span>
       </div>
       <Button
         variant="ghost"
@@ -357,35 +416,62 @@ const ChatHistoryItem: React.FC<{
 };
 
 // Message Bubble Component
-const MessageBubble: React.FC<{ message: Message; isRTL: boolean }> = ({ message, isRTL }) => {
+const MessageBubble: React.FC<{ 
+  message: MessageType; 
+  isRTL: boolean;
+  language: string;
+}> = ({ message, isRTL, language }) => {
   const isUser = message.role === 'user';
+
+  const formatTime = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: language === 'ar' ? ar : enUS,
+      });
+    } catch {
+      return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  };
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}>
       <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3 max-w-[80%]`}>
         <div
           className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-            isUser ? 'bg-primary' : 'bg-secondary'
+            isUser ? 'bg-gradient-to-br from-green-500 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-purple-600'
           }`}
         >
           {isUser ? (
-            <UserIcon className="h-4 w-4 text-primary-foreground" />
+            <UserIcon className="h-4 w-4 text-white" />
           ) : (
-            <Bot className="h-4 w-4 text-foreground" />
+            <Bot className="h-4 w-4 text-white" />
           )}
         </div>
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
           }`}
-          dir={isRTL ? 'rtl' : 'ltr'}
+          dir={message.language === 'ar' ? 'rtl' : 'ltr'}
         >
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-          <span className="text-xs opacity-70 mt-1 block">
-            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
+          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          <div className="flex items-center gap-2 mt-1 text-xs opacity-70">
+            <span>{formatTime(message.created_at)}</span>
+            {!isUser && message.ai_model && (
+              <>
+                <span>•</span>
+                <span className="capitalize">{message.ai_model}</span>
+              </>
+            )}
+            {!isUser && message.response_time > 0 && (
+              <>
+                <span>•</span>
+                <span>{message.response_time.toFixed(1)}s</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -37,33 +37,33 @@ const Features: React.FC = () => {
   const features = [
     {
       icon: <Clock className="h-7 w-7 text-white" />,
-      title: t('feature1Title'),
-      description: t('feature1Desc'),
+      title: t('features.feature1.title'),
+      description: t('features.feature1.description'),
     },
     {
       icon: <Globe className="h-7 w-7 text-white" />,
-      title: t('feature2Title'),
-      description: t('feature2Desc'),
+      title: t('features.feature2.title'),
+      description: t('features.feature2.description'),
     },
     {
       icon: <Brain className="h-7 w-7 text-white" />,
-      title: t('feature3Title'),
-      description: t('feature3Desc'),
+      title: t('features.feature3.title'),
+      description: t('features.feature3.description'),
     },
     {
       icon: <Shield className="h-7 w-7 text-white" />,
-      title: t('feature4Title'),
-      description: t('feature4Desc'),
+      title: t('features.feature4.title'),
+      description: t('features.feature4.description'),
     },
     {
       icon: <Heart className="h-7 w-7 text-white" />,
-      title: t('feature5Title'),
-      description: t('feature5Desc'),
+      title: t('features.feature5.title'),
+      description: t('features.feature5.description'),
     },
     {
       icon: <Zap className="h-7 w-7 text-white" />,
-      title: t('feature6Title'),
-      description: t('feature6Desc'),
+      title: t('features.feature6.title'),
+      description: t('features.feature6.description'),
     },
   ];
 
@@ -73,10 +73,10 @@ const Features: React.FC = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">
-            {t('featuresTitle')}
+            {t('features.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('featuresSubtitle')}
+            {t('features.subtitle')}
           </p>
         </div>
 

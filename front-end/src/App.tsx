@@ -2,12 +2,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ChatProvider } from '@/contexts/ChatContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PublicRoute from '@/components/PublicRoute';
 import Navigation from '@/components/Navigation';
 import Landing from '@/pages/Landing';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
+import Chat from '@/pages/Chat';
 import Chatbot from '@/pages/Chatbot';
 import Profile from '@/pages/Profile';
 import env from '@/config/env';
@@ -19,9 +21,10 @@ function App() {
       <Router>
         <LanguageProvider>
           <AuthProvider>
-            <div className="min-h-screen bg-background text-foreground">
-              <Navigation />
-              <Routes>
+            <ChatProvider>
+              <div className="min-h-screen bg-background text-foreground">
+                <Navigation />
+                <Routes>
             {/* Landing Page with Footer */}
             <Route
               path="/"
@@ -62,6 +65,16 @@ function App() {
               } 
             />
 
+            {/* Chat Page - Protected, requires authentication */}
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              } 
+            />
+
             {/* Chatbot Page - Protected, requires authentication */}
             <Route 
               path="/chatbot" 
@@ -82,10 +95,11 @@ function App() {
               } 
             />
           </Routes>
-        </div>
+              </div>
+            </ChatProvider>
           </AuthProvider>
-      </LanguageProvider>
-    </Router>
+        </LanguageProvider>
+      </Router>
     </GoogleOAuthProvider>
   );
 }

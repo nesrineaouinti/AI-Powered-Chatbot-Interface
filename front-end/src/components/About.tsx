@@ -12,10 +12,10 @@ const About: React.FC = () => {
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">
-              {t('aboutTitle')}
+              {t('about.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('aboutSubtitle')}
+              {t('about.subtitle')}
             </p>
           </div>
 
@@ -48,7 +48,7 @@ const About: React.FC = () => {
             {/* Right Side - Text Content */}
             <div className="space-y-6">
               <p className="text-lg leading-relaxed text-foreground">
-                {t('aboutDesc')}
+                {t('about.description')}
               </p>
               
               <div className="space-y-4 pt-4">
@@ -57,8 +57,8 @@ const About: React.FC = () => {
                     <Target className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg mb-1">{t('missionTitle')}</h3>
-                    <p className="text-muted-foreground">{t('missionDesc')}</p>
+                    <h3 className="font-bold text-lg mb-1">{t('about.mission.title')}</h3>
+                    <p className="text-muted-foreground">{t('about.mission.description')}</p>
                   </div>
                 </div>
 
@@ -67,8 +67,8 @@ const About: React.FC = () => {
                     <Eye className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg mb-1">{t('visionTitle')}</h3>
-                    <p className="text-muted-foreground">{t('visionDesc')}</p>
+                    <h3 className="font-bold text-lg mb-1">{t('about.vision.title')}</h3>
+                    <p className="text-muted-foreground">{t('about.vision.description')}</p>
                   </div>
                 </div>
               </div>
@@ -81,24 +81,24 @@ const About: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Award className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Industry Leading</h3>
-              <p className="text-muted-foreground">Recognized for excellence in AI innovation</p>
+              <h3 className="text-2xl font-bold mb-2">{t('about.stats.industryLeading.title')}</h3>
+              <p className="text-muted-foreground">{t('about.stats.industryLeading.description')}</p>
             </div>
 
             <div className="glass-effect rounded-2xl p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Users className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">100K+ Users</h3>
-              <p className="text-muted-foreground">Trusted by individuals and businesses worldwide</p>
+              <h3 className="text-2xl font-bold mb-2">{t('about.stats.users.title')}</h3>
+              <p className="text-muted-foreground">{t('about.stats.users.description')}</p>
             </div>
 
             <div className="glass-effect rounded-2xl p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Target className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">98% Satisfaction</h3>
-              <p className="text-muted-foreground">Consistently high user satisfaction ratings</p>
+              <h3 className="text-2xl font-bold mb-2">{t('about.stats.satisfaction.title')}</h3>
+              <p className="text-muted-foreground">{t('about.stats.satisfaction.description')}</p>
             </div>
           </div>
         </div>

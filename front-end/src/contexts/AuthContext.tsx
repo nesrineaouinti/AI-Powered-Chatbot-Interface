@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService, User, AuthTokens, LoginCredentials, SignupData } from '@/services/authService';
+import { authService, User, LoginCredentials, SignupData } from '@/services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +12,7 @@ interface AuthContextType {
   googleLogin: (token: string, languagePreference?: 'en' | 'ar') => Promise<void>;
   logout: () => Promise<void>;
   updateLanguage: (language: 'en' | 'ar') => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
 
@@ -166,6 +167,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateProfile = async (data: Partial<User>) => {
+    try {
+      setLoading(true);
+      const accessToken = authService.getAccessToken();
+      
+      if (!accessToken) {
+        throw new Error('Not authenticated');
+      }
+
+      const updatedUser = await authService.updateProfile(accessToken, data);
+      
+      authService.saveUser(updatedUser);
+      setUser(updatedUser);
+      setError(null);
+    } catch (err: any) {
+      const errorMsg = err.message || 'Failed to update profile';
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const refreshUserData = async () => {
     try {
       const accessToken = authService.getAccessToken();
@@ -195,6 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     googleLogin,
     logout,
     updateLanguage,
+    updateProfile,
     refreshUserData,
   };
 

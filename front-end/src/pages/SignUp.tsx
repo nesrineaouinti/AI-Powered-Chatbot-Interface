@@ -30,6 +30,48 @@ const SignUp: React.FC = () => {
     mode: 'onBlur',
   });
 
+  const parseSignupError = (err: any): string => {
+    try {
+      const errorData = JSON.parse(err.message || '{}');
+      
+      // Check for specific field errors
+      if (errorData.email) {
+        const emailError = errorData.email[0].toLowerCase();
+        if (emailError.includes('already') || emailError.includes('exists')) {
+          return t('errors.emailAlreadyExists');
+        }
+        return errorData.email[0];
+      }
+      
+      if (errorData.username) {
+        return errorData.username[0];
+      }
+      
+      if (errorData.password) {
+        const passwordError = errorData.password[0].toLowerCase();
+        if (passwordError.includes('weak') || passwordError.includes('common')) {
+          return t('errors.weakPassword');
+        }
+        return errorData.password[0];
+      }
+      
+      // Handle response data errors
+      if (err?.response?.data) {
+        const data = err.response.data;
+        if (data.error) {
+          const errorMsg = data.error.toLowerCase();
+          if (errorMsg.includes('email') && errorMsg.includes('exists')) {
+            return t('errors.emailAlreadyExists');
+          }
+        }
+      }
+    } catch {
+      // Parsing failed, use default error
+    }
+    
+    return t('errors.signupFailed');
+  };
+
   const onSubmit = async (data: SignUpFormData) => {
     setAuthError('');
 
@@ -43,28 +85,8 @@ const SignUp: React.FC = () => {
       });
       navigate('/chatbot');
     } catch (err: any) {
-      try {
-        const errorData = JSON.parse(err.message || '{}');
-        if (errorData.email) {
-          setAuthError(errorData.email[0]);
-        } else if (errorData.username) {
-          setAuthError(errorData.username[0]);
-        } else if (errorData.password) {
-          setAuthError(errorData.password[0]);
-        } else {
-          setAuthError(
-            language === 'ar'
-              ? 'فشل التسجيل. يرجى المحاولة مرة أخرى.'
-              : 'Registration failed. Please try again.'
-          );
-        }
-      } catch {
-        setAuthError(
-          language === 'ar'
-            ? 'فشل التسجيل. يرجى المحاولة مرة أخرى.'
-            : 'Registration failed. Please try again.'
-        );
-      }
+      const errorMessage = parseSignupError(err);
+      setAuthError(errorMessage);
       console.error('Signup error:', err);
     }
   };
@@ -74,13 +96,13 @@ const SignUp: React.FC = () => {
       await googleLogin(token);
       navigate('/chatbot');
     } catch (err: any) {
-      setAuthError('Google authentication failed. Please try again.');
+      setAuthError(t('errors.googleAuthFailed'));
       console.error('Google auth error:', err);
     }
   };
 
   const handleGoogleError = () => {
-    setAuthError('Google authentication failed. Please try again.');
+    setAuthError(t('errors.googleAuthFailed'));
   };
 
   return (

@@ -17,6 +17,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)'],
+        arabic: ['var(--font-arabic)'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

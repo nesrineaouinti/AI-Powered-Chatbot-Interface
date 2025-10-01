@@ -1,6 +1,10 @@
 # 🤖 AI-Powered Chatbot Interface
 
-A modern, secure chatbot application with complete authentication system including traditional email/password and Google OAuth integration.
+A modern, production-ready full-stack AI chatbot application with **multi-language support** (English & Arabic), **multiple AI models**, and **beautiful UI**.
+
+**Status**: ✅ Complete & Production-Ready  
+**Stack**: Django REST + React + TypeScript  
+**Features**: 6 AI Models | Multi-Language | Real-Time Chat | Dark Mode | Google OAuth integration.
 
 ## ✨ Features
 
@@ -27,6 +31,16 @@ A modern, secure chatbot application with complete authentication system includi
 - User-specific language preferences
 - Stored in database
 
+### 🤖 AI Chatbot Features
+- **6 AI Models**: OpenAI, Gemini, DeepSeek, Grok, LLaMA, Mock
+- **Automatic Fallback**: Priority-based model selection
+- **Multi-Language AI**: Responds in English or Arabic
+- **Real-Time Chat**: Beautiful, responsive interface
+- **Chat Management**: Create, archive, delete, search
+- **User Summaries**: AI-generated user profiles
+- **Message History**: Persistent conversation storage
+- **Dark Mode**: Full dark mode support
+
 ---
 
 ## 🚀 Quick Start
@@ -40,8 +54,21 @@ A modern, secure chatbot application with complete authentication system includi
 
 ```bash
 cd Back-end
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-python manage.py runserver
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run migrations
+python3 manage.py migrate
+
+# Initialize AI models
+python3 manage.py init_ai_models
+
+# Create superuser (optional)
+python3 manage.py createsuperuser
+
+# Start server
+python3 manage.py runserver
 ```
 
 **Backend runs on**: http://localhost:8000
@@ -50,20 +77,33 @@ python manage.py runserver
 
 ```bash
 cd front-end
-npm install  # First time only
+
+# Install dependencies
+npm install
+npm install date-fns
+
+# Start dev server
 npm run dev
 ```
 
-**Frontend runs on**: http://localhost:5174
+**Frontend runs on**: http://localhost:5173
 
 ### 3. Test It!
 
-**Traditional Auth** (works immediately):
-- Visit: http://localhost:5174/signup
-- Register with email/password
-- Login and start chatting!
+**AI Chatbot** (works immediately with mock AI):
+1. Visit: http://localhost:5173/signup
+2. Register with email/password
+3. Click "Chat" button in navigation
+4. Click "New Chat" to create a chat
+5. Type a message and press Enter
+6. Get AI response instantly! ✨
 
-**Google OAuth** (requires 5-min setup):
+**With Real AI Models** (optional):
+- Add API keys to `Back-end/.env`
+- Restart backend server
+- AI will use real models (OpenAI, Gemini, etc.)
+
+**Google OAuth** (optional):
 - Follow: `QUICK_START_GOOGLE_OAUTH.md`
 - Get Google Client ID
 - Configure and test!
@@ -98,25 +138,33 @@ AI-Powered-Chatbot-Interface/
 
 ## 📚 Documentation
 
-### Getting Started
-- **`QUICK_START_GOOGLE_OAUTH.md`** - 5-minute Google OAuth setup
-- **`COMPLETE_IMPLEMENTATION_SUMMARY.md`** - Full feature overview
+### Quick Start
+- **`QUICK_REFERENCE.md`** - ⚡ Quick reference guide
+- **`AI_CHATBOT_QUICK_START.md`** - 5-minute chatbot setup
+- **`QUICK_START_GOOGLE_OAUTH.md`** - Google OAuth setup
 
-### Google OAuth
+### AI Chatbot
+- **`FULL_STACK_IMPLEMENTATION_SUMMARY.md`** - Complete implementation overview
+- **`FRONTEND_IMPLEMENTATION_GUIDE.md`** - Frontend guide
+- **`Back-end/AI_CHATBOT_API_DOCUMENTATION.md`** - API reference
+- **`ARCHITECTURE_OVERVIEW.md`** - System architecture
+
+### Authentication
 - **`GOOGLE_OAUTH_SETUP.md`** - Complete setup guide
 - **`GOOGLE_OAUTH_IMPLEMENTATION.md`** - Implementation details
+- **`COMPLETE_IMPLEMENTATION_SUMMARY.md`** - Feature overview
 
 ### Backend
 - **`Back-end/README.md`** - Backend documentation
-- **`Back-end/SECURITY_DOCUMENTATION.md`** - Security guide (20+ pages)
-- **`Back-end/API_TESTING_GUIDE.md`** - API testing instructions
-- **`Back-end/QUICK_REFERENCE.md`** - Quick command reference
+- **`Back-end/SECURITY_DOCUMENTATION.md`** - Security guide
+- **`Back-end/API_TESTING_GUIDE.md`** - API testing
+- **`Back-end/test_api.sh`** - Automated API tests
 
 ---
 
 ## 🔐 API Endpoints
 
-### Base URL: `http://localhost:8000/api/auth/`
+### Authentication - Base URL: `http://localhost:8000/api/auth/`
 
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
@@ -127,6 +175,20 @@ AI-Powered-Chatbot-Interface/
 | `/profile/` | GET/PATCH | ✅ | View/update profile |
 | `/change-password/` | POST | ✅ | Change password |
 | `/token/refresh/` | POST | ❌ | Refresh access token |
+
+### AI Chatbot - Base URL: `http://localhost:8000/api/`
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/chats/` | GET | ✅ | List all user's chats |
+| `/chats/` | POST | ✅ | Create new chat |
+| `/chats/{id}/` | GET | ✅ | Get chat with messages |
+| `/chats/{id}/send_message/` | POST | ✅ | **Send message & get AI response** ⭐ |
+| `/chats/{id}/archive/` | POST | ✅ | Archive/unarchive chat |
+| `/chats/{id}/` | DELETE | ✅ | Delete chat |
+| `/chats/statistics/` | GET | ✅ | Get user statistics |
+| `/summaries/generate/` | POST | ✅ | Generate AI user summary |
+| `/ai-models/` | GET | ✅ | List available AI models |
 
 ---
 

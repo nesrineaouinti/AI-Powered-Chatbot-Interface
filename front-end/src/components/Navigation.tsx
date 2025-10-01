@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { 
   Menu, 
   X, 
@@ -17,14 +18,13 @@ import {
   LogIn, 
   UserPlus, 
   LogOut,
-  Globe,
   Bot
 } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { language, setLanguage, t, isRTL } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,9 +62,6 @@ const Navigation: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'ar' : 'en');
-  };
 
   return (
     <nav
@@ -88,42 +85,32 @@ const Navigation: React.FC = () => {
               onClick={() => scrollToSection('home')}
               className="text-foreground hover:text-primary transition-colors font-medium"
             >
-              {t('home')}
+              {t('navigation.home')}
             </button>
             <button
               onClick={() => scrollToSection('features')}
               className="text-foreground hover:text-primary transition-colors font-medium"
             >
-              {t('features')}
+              {t('navigation.features')}
             </button>
             <button
               onClick={() => scrollToSection('about')}
               className="text-foreground hover:text-primary transition-colors font-medium"
             >
-              {t('about')}
+              {t('navigation.about')}
             </button>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Language Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleLanguage}
-              className="relative"
-            >
-              <Globe className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 text-xs font-bold">
-                {language.toUpperCase()}
-              </span>
-            </Button>
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="ghost" showLabel={false} />
 
-            {/* Chatbot Access - Only show if authenticated */}
+            {/* Chat Access - Only show if authenticated */}
             {isAuthenticated && (
               <Button variant="outline" className="space-x-2" onClick={() => navigate('/chatbot')}>
                 <MessageSquare className="h-4 w-4" />
-                <span>{t('chatbot')}</span>
+                <span>{t('navigation.chatbot')}</span>
               </Button>
             )}
 
@@ -149,11 +136,11 @@ const Navigation: React.FC = () => {
                   </div>
                   <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>
                     <User className="mr-2 h-4 w-4" />
-                    <span>{t('profile')}</span>
+                    <span>{t('navigation.profile')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('logout')}</span>
+                    <span>{t('navigation.logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -161,11 +148,11 @@ const Navigation: React.FC = () => {
               <>
                 <Button variant="outline" onClick={() => navigate('/signin')}>
                   <LogIn className="mr-2 h-4 w-4" />
-                  {t('login')}
+                  {t('navigation.login')}
                 </Button>
                 <Button onClick={() => navigate('/signup')}>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  {t('signup')}
+                  {t('navigation.signup')}
                 </Button>
               </>
             )}
@@ -173,13 +160,7 @@ const Navigation: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleLanguage}
-            >
-              <Globe className="h-5 w-5" />
-            </Button>
+            <LanguageSwitcher variant="ghost" showLabel={false} />
             <Button
               variant="ghost"
               size="icon"
@@ -201,19 +182,19 @@ const Navigation: React.FC = () => {
               onClick={() => scrollToSection('home')}
               className="block w-full text-left px-4 py-2 text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
             >
-              {t('home')}
+              {t('navigation.home')}
             </button>
             <button
               onClick={() => scrollToSection('features')}
               className="block w-full text-left px-4 py-2 text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
             >
-              {t('features')}
+              {t('navigation.features')}
             </button>
             <button
               onClick={() => scrollToSection('about')}
               className="block w-full text-left px-4 py-2 text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
             >
-              {t('about')}
+              {t('navigation.about')}
             </button>
             <div className="border-t pt-4 space-y-2">
               {isAuthenticated ? (
@@ -235,26 +216,26 @@ const Navigation: React.FC = () => {
                   </div>
                   <Button variant="outline" className="w-full space-x-2" onClick={() => { navigate('/chatbot'); setIsMobileMenuOpen(false); }}>
                     <MessageSquare className="h-4 w-4" />
-                    <span>{t('chatbot')}</span>
+                    <span>{t('navigation.chatbot')}</span>
                   </Button>
                   <Button variant="outline" className="w-full space-x-2" onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}>
                     <User className="h-4 w-4" />
-                    <span>{t('profile')}</span>
+                    <span>{t('navigation.profile')}</span>
                   </Button>
                   <Button variant="destructive" className="w-full space-x-2" onClick={handleLogout}>
                     <LogOut className="h-4 w-4" />
-                    <span>{t('logout')}</span>
+                    <span>{t('navigation.logout')}</span>
                   </Button>
                 </>
               ) : (
                 <>
                   <Button variant="default" className="w-full space-x-2" onClick={() => { navigate('/signin'); setIsMobileMenuOpen(false); }}>
                     <LogIn className="h-4 w-4" />
-                    <span>{t('login')}</span>
+                    <span>{t('navigation.login')}</span>
                   </Button>
                   <Button variant="secondary" className="w-full space-x-2" onClick={() => { navigate('/signup'); setIsMobileMenuOpen(false); }}>
                     <UserPlus className="h-4 w-4" />
-                    <span>{t('signup')}</span>
+                    <span>{t('navigation.signup')}</span>
                   </Button>
                 </>
               )}
