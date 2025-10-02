@@ -18,6 +18,7 @@ interface LanguageContextType {
   t: (key: string) => string;
   isRTL: boolean;
   translations: Translations;
+  syncLanguageFromUser: (userLanguage: Language) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -95,6 +96,18 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   /**
+   * Sync language from user profile (when user logs in)
+   * This updates the language and saves to localStorage
+   * Backend preference takes priority over localStorage
+   */
+  const syncLanguageFromUser = (userLanguage: Language) => {
+    if (userLanguage !== language) {
+      setLanguageState(userLanguage);
+      saveLanguagePreference(userLanguage);
+    }
+  };
+
+  /**
    * Translation function with dot notation support
    * Example: t('auth.signIn.title') or t('navigation.home')
    */
@@ -122,7 +135,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const isRTL = language === 'ar';
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL, translations }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL, translations, syncLanguageFromUser }}>
       {children}
     </LanguageContext.Provider>
   );

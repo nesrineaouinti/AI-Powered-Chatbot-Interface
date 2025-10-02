@@ -6,10 +6,11 @@ import { ChatProvider } from '@/contexts/ChatContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PublicRoute from '@/components/PublicRoute';
 import Navigation from '@/components/Navigation';
+import LanguageSync from '@/components/LanguageSync';
+import Footer from '@/components/Footer';
 import Landing from '@/pages/Landing';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
-import Chat from '@/pages/Chat';
 import Chatbot from '@/pages/Chatbot';
 import Profile from '@/pages/Profile';
 import env from '@/config/env';
@@ -21,80 +22,71 @@ function App() {
       <Router>
         <LanguageProvider>
           <AuthProvider>
+            <LanguageSync />
             <ChatProvider>
               <div className="min-h-screen bg-background text-foreground">
                 <Navigation />
                 <Routes>
-            {/* Landing Page with Footer */}
-            <Route
-              path="/"
-              element={
-                <>
-                  <main>
-                    <Landing />
-                  </main>
-                  <footer className="bg-secondary/50 py-8 border-t">
-                    <div className="container mx-auto px-4">
-                      <div className="text-center text-muted-foreground">
-                        <p>&copy; 2025 AI Chatbot. All rights reserved.</p>
-                        <p className="mt-2 text-sm">Built with React, TypeScript, and shadcn/ui</p>
-                      </div>
-                    </div>
-                  </footer>
-                </>
-              }
-            />
+                  {/* Landing Page with Footer */}
+                  <Route
+                    path="/"
+                    element={
+                      <>
+                        <main>
+                          <Landing />
+                        </main>
+                        <Footer />
+                      </>
+                    }
+                  />
 
-            {/* Sign In Page - Redirect to chatbot if already logged in */}
-            <Route 
-              path="/signin" 
-              element={
-                <PublicRoute restricted>
-                  <SignIn />
-                </PublicRoute>
-              } 
-            />
+                  {/* Sign In Page - Redirect to chatbot if already logged in */}
+                  <Route
+                    path="/signin"
+                    element={
+                      <PublicRoute restricted>
+                        <SignIn />
+                      </PublicRoute>
+                    }
+                  />
 
-            {/* Sign Up Page - Redirect to chatbot if already logged in */}
-            <Route 
-              path="/signup" 
-              element={
-                <PublicRoute restricted>
-                  <SignUp />
-                </PublicRoute>
-              } 
-            />
+                  {/* Sign Up Page - Redirect to chatbot if already logged in */}
+                  <Route
+                    path="/signup"
+                    element={
+                      <PublicRoute restricted>
+                        <SignUp />
+                      </PublicRoute>
+                    }
+                  />
 
-            {/* Chat Page - Protected, requires authentication */}
-            <Route 
-              path="/chat" 
-              element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
-              } 
-            />
+        
+                  {/* Chatbot Page - Protected, requires authentication */}
+                  <Route
+                    path="/chatbot"
+                    element={
+                      <ProtectedRoute>
+                        <Chatbot />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/chatbot/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Chatbot />
+                      </ProtectedRoute>
+                    } />
 
-            {/* Chatbot Page - Protected, requires authentication */}
-            <Route 
-              path="/chatbot" 
-              element={
-                <ProtectedRoute>
-                  <Chatbot />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* Profile Page - Protected, requires authentication */}
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
+                  {/* Profile Page - Protected, requires authentication */}
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
               </div>
             </ChatProvider>
           </AuthProvider>

@@ -62,25 +62,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await authService.login(credentials);
-      
+  
       authService.saveTokens(response.tokens);
       authService.saveUser(response.user);
       setUser(response.user);
     } catch (err: any) {
-      const errorMsg = err.message || 'Login failed';
-      setError(errorMsg);
-      throw err;
+      let backendMsg = 'Login failed';
+      if (err.response?.data?.detail) backendMsg = err.response.data.detail;
+      else if (err.response?.data?.error) backendMsg = err.response.data.error;
+  
+      setError(backendMsg);
+  
+      // Keep original error with extra field
+      err.backendMessage = backendMsg;
+      throw err; // do NOT throw new Error(), keep original
     } finally {
       setLoading(false);
     }
   };
+  
+  
+
 
   const signup = async (data: SignupData) => {
     try {
       setLoading(true);
       setError(null);
       const response = await authService.signup(data);
-      
+
       authService.saveTokens(response.tokens);
       authService.saveUser(response.user);
       setUser(response.user);
@@ -101,7 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         token: googleToken,
         language_preference: languagePreference,
       });
-      
+
       authService.saveTokens(response.tokens);
       authService.saveUser(response.user);
       setUser(response.user);
@@ -119,7 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       const accessToken = authService.getAccessToken();
       const refreshToken = authService.getRefreshToken();
-      
+
       if (accessToken && refreshToken) {
         try {
           await authService.logout(refreshToken, accessToken);
@@ -127,7 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.error('Logout API error:', err);
         }
       }
-      
+
       authService.clearAuth();
       setUser(null);
       setError(null);
@@ -146,7 +155,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       const accessToken = authService.getAccessToken();
-      
+
       if (!accessToken) {
         throw new Error('Not authenticated');
       }
@@ -154,7 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const updatedUser = await authService.updateProfile(accessToken, {
         language_preference: language,
       });
-      
+
       authService.saveUser(updatedUser);
       setUser(updatedUser);
       setError(null);
@@ -171,13 +180,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       const accessToken = authService.getAccessToken();
-      
+
       if (!accessToken) {
         throw new Error('Not authenticated');
       }
 
       const updatedUser = await authService.updateProfile(accessToken, data);
-      
+
       authService.saveUser(updatedUser);
       setUser(updatedUser);
       setError(null);
@@ -193,7 +202,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUserData = async () => {
     try {
       const accessToken = authService.getAccessToken();
-      
+
       if (!accessToken) {
         return;
       }

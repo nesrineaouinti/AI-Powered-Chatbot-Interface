@@ -90,6 +90,7 @@ export interface Translations {
       subtitle: string;
       description: string;
       button: string;
+      creating: string;
       haveAccount: string;
     };
     fields: {
@@ -100,11 +101,11 @@ export interface Translations {
       confirmPassword: string;
       fullName: string;
       fullNamePlaceholder: string;
+      username: string;
+      usernamePlaceholder: string;
       passwordHint: string;
     };
     options: {
-      forgotPassword: string;
-      rememberMe: string;
       orContinueWith: string;
       orSignUpWith: string;
       google: string;
@@ -157,7 +158,6 @@ export interface Translations {
     };
     actions: {
       editProfile: string;
-      settings: string;
     };
   };
   common: {

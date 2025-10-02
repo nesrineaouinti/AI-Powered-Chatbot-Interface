@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,39 +15,56 @@ import {
 } from '@/components/ui/select';
 import {
   Send,
-  Plus,
-  MessageSquare,
-  Trash2,
   Bot,
   User as UserIcon,
   Menu,
   X,
   Loader2,
 } from 'lucide-react';
-import type { Chat as ChatType, Message as MessageType, AIModel } from '@/types/chat';
+import type { Message as MessageType, AIModel } from '@/types/chat';
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
+import ChatSidebar from '@/components/ChatSidebar';
+// HELPER HOOK for detecting screen size
+const useMediaQuery = (query: string) => {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    window.addEventListener('resize', listener);
+    return () => window.removeEventListener('resize', listener);
+  }, [matches, query]);
+
+  return matches;
+};
 
 const Chatbot: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>(); // chat id from URL
   const { user } = useAuth();
   const { t, language, isRTL } = useLanguage();
   const {
-    chats,
     currentChat,
     availableModels,
-    isLoading,
     isSendingMessage,
     loadChat,
     createChat,
-    deleteChat,
     sendMessage: sendMessageToBackend,
   } = useChat();
-
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(isDesktop);
   const [selectedModel, setSelectedModel] = useState<AIModel>('groq');
   const [inputMessage, setInputMessage] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Keep it responsive when resizing the window
+  useEffect(() => {
+    setIsSidebarOpen(isDesktop);
+  }, [isDesktop]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -56,23 +73,29 @@ const Chatbot: React.FC = () => {
     }
   }, [user, navigate]);
 
+  // Load chat from URL param
+  useEffect(() => {
+    if (id) {
+      loadChat(Number(id)).catch(() => {
+        console.error('Failed to load chat');
+        navigate('/chatbot'); // fallback if invalid
+      });
+    }
+  }, [id, loadChat, navigate]);
+
   // Auto-select first available model
   useEffect(() => {
     if (availableModels.length > 0) {
-      // Select the highest priority active model
       const topModel = availableModels[0];
       setSelectedModel(topModel.name);
     }
   }, [availableModels]);
 
-  // Get top 3 models for display (prioritize active models with API keys)
+  // Get top 3 models
   const getDisplayModels = () => {
     if (availableModels.length > 0) {
-      // Return top 3 active models
       return availableModels.slice(0, 3);
     }
-    
-    // Fallback: Show free/open-source models if no API keys configured
     return [
       { name: 'groq', supports_english: true, supports_arabic: true, priority: 10 },
       { name: 'other', supports_english: true, supports_arabic: true, priority: 0 },
@@ -81,206 +104,80 @@ const Chatbot: React.FC = () => {
 
   const displayModels = getDisplayModels();
 
+  // Auto-scroll to bottom on new messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
   useEffect(() => {
     scrollToBottom();
   }, [currentChat?.messages]);
 
-  const handleCreateNewChat = async () => {
-    if (isLoading) return;
-    
-    try {
-      const newChat = await createChat(language);
-      if (newChat) {
-        console.log('Chat created successfully:', newChat);
-      }
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-    }
-  };
 
+  // Send message (auto-create chat if needed)
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !currentChat || isSendingMessage) return;
+    if (!inputMessage.trim() || isSendingMessage) return;
 
     const messageContent = inputMessage;
     setInputMessage('');
 
     try {
-      await sendMessageToBackend(currentChat.id, messageContent, language, selectedModel);
+      let chatId = currentChat?.id;
+
+      if (!chatId) {
+        const newChat = await createChat(language);
+        if (!newChat) throw new Error('Failed to create new chat');
+        chatId = newChat.id;
+        navigate(`/chatbot/${chatId}`);
+        await loadChat(chatId);
+      }
+
+      await sendMessageToBackend(chatId!, messageContent, language, selectedModel);
     } catch (error) {
       console.error('Failed to send message:', error);
-      // Restore input on error
       setInputMessage(messageContent);
     }
   };
 
-  const handleSelectChat = async (chat: ChatType) => {
-    try {
-      await loadChat(chat.id);
-    } catch (error) {
-      console.error('Failed to load chat:', error);
-    }
-  };
 
-  const handleDeleteChat = async (chatId: number) => {
-    try {
-      await deleteChat(chatId);
-    } catch (error) {
-      console.error('Failed to delete chat:', error);
-    }
-  };
 
-  const groupChatsByDate = () => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const lastWeek = new Date(today);
-    lastWeek.setDate(lastWeek.getDate() - 7);
 
-    // Safety check: ensure chats is an array
-    const chatList = Array.isArray(chats) ? chats : [];
-    
-    console.log('Chatbot: groupChatsByDate - chats from context:', chats);
-    console.log('Chatbot: chatList length:', chatList.length);
-
-    return {
-      today: chatList.filter(chat => new Date(chat.created_at) >= today),
-      yesterday: chatList.filter(chat => {
-        const date = new Date(chat.created_at);
-        return date >= yesterday && date < today;
-      }),
-      lastWeek: chatList.filter(chat => {
-        const date = new Date(chat.created_at);
-        return date >= lastWeek && date < yesterday;
-      }),
-      older: chatList.filter(chat => new Date(chat.created_at) < lastWeek),
-    };
-  };
-
-  const groupedChats = groupChatsByDate();
-  
-  console.log('Chatbot: Grouped chats:', {
-    today: groupedChats.today.length,
-    yesterday: groupedChats.yesterday.length,
-    lastWeek: groupedChats.lastWeek.length,
-    older: groupedChats.older.length,
-    total: groupedChats.today.length + groupedChats.yesterday.length + groupedChats.lastWeek.length + groupedChats.older.length
-  });
-
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-background pt-16">
-      {/* Sidebar - Chat History */}
-      <div
-        className={`${
-          isSidebarOpen ? 'w-80' : 'w-0'
-        } transition-all duration-300 border-r bg-secondary/20 flex flex-col overflow-hidden`}
-      >
-        <div className="p-4 border-b">
-          <Button onClick={handleCreateNewChat} className="w-full" size="lg" disabled={isLoading}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('newChat')}
-          </Button>
-        </div>
+    <div className="relative flex h-screen bg-background pt-16">
 
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-6">
-            {groupedChats.today.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-2">
-                  {t('today')}
-                </h3>
-                {groupedChats.today.map(chat => (
-                  <ChatHistoryItem
-                    key={chat.id}
-                    chat={chat}
-                    isActive={currentChat?.id === chat.id}
-                    onSelect={() => handleSelectChat(chat)}
-                    onDelete={() => handleDeleteChat(chat.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {groupedChats.yesterday.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-2">
-                  {t('yesterday')}
-                </h3>
-                {groupedChats.yesterday.map(chat => (
-                  <ChatHistoryItem
-                    key={chat.id}
-                    chat={chat}
-                    isActive={currentChat?.id === chat.id}
-                    onSelect={() => handleSelectChat(chat)}
-                    onDelete={() => handleDeleteChat(chat.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {groupedChats.lastWeek.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-2">
-                  {t('lastWeek')}
-                </h3>
-                {groupedChats.lastWeek.map(chat => (
-                  <ChatHistoryItem
-                    key={chat.id}
-                    chat={chat}
-                    isActive={currentChat?.id === chat.id}
-                    onSelect={() => handleSelectChat(chat)}
-                    onDelete={() => handleDeleteChat(chat.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {groupedChats.older.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-2">
-                  {t('older')}
-                </h3>
-                {groupedChats.older.map(chat => (
-                  <ChatHistoryItem
-                    key={chat.id}
-                    chat={chat}
-                    isActive={currentChat?.id === chat.id}
-                    onSelect={() => handleSelectChat(chat)}
-                    onDelete={() => handleDeleteChat(chat.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+      {/* MODIFICATION: Backdrop for mobile overlay */}
+      {!isDesktop && isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      {/* Sidebar */}
+      <div className={`
+        ${isDesktop ? 'relative' : 'fixed top-16 h-[calc(100vh-4rem)] z-40 bg-background'}
+        ${isSidebarOpen ? (isDesktop ? 'w-80' : 'w-72 translate-x-0') : (isDesktop ? 'w-16' : 'w-72 -translate-x-full')}
+        transition-all duration-300 ease-in-out
+      `}>
+        <ChatSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="border-b p-4 flex items-center justify-between bg-background">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-            <h1 className="text-xl font-bold">{t('chatbotTitle')}</h1>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            {isSidebarOpen && !isDesktop ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+
 
           <div className="w-64">
-            <Select 
-              value={selectedModel} 
+            <Select
+              value={selectedModel}
               onValueChange={(value) => setSelectedModel(value as AIModel)}
             >
               <SelectTrigger>
@@ -310,13 +207,12 @@ const Chatbot: React.FC = () => {
           </div>
         </div>
 
-        {/* Messages Area */}
+        {/* Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="max-w-4xl mx-auto space-y-4">
             {!currentChat || currentChat.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-20">
                 <Bot className="h-16 w-16 text-primary mb-4" />
-                <h2 className="text-2xl font-bold mb-2">{t('chatbotTitle') || 'AI Chatbot'}</h2>
                 <p className="text-muted-foreground">
                   {isRTL
                     ? 'ابدأ محادثة جديدة مع مساعدك الذكي'
@@ -326,7 +222,7 @@ const Chatbot: React.FC = () => {
             ) : (
               <>
                 {currentChat.messages.map(message => (
-                  <MessageBubble key={message.id} message={message} isRTL={isRTL} language={language} />
+                  <MessageBubble key={message.id} message={message} language={language} />
                 ))}
                 {isSendingMessage && (
                   <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -352,22 +248,22 @@ const Chatbot: React.FC = () => {
           </div>
         </ScrollArea>
 
-        {/* Input Area */}
+        {/* Input */}
         <div className="border-t p-4 bg-background">
           <div className="max-w-4xl mx-auto flex space-x-2">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !isSendingMessage && handleSendMessage()}
-              placeholder={t('typeMessage') || 'Type a message...'}
+              placeholder={t('chat.typeMessage') || 'Type a message...'}
               className="flex-1"
               dir={isRTL ? 'rtl' : 'ltr'}
-              disabled={!currentChat || isSendingMessage}
+              disabled={isSendingMessage}
             />
-            <Button 
-              onClick={handleSendMessage} 
+            <Button
+              onClick={handleSendMessage}
               size="lg"
-              disabled={!currentChat || !inputMessage.trim() || isSendingMessage}
+              disabled={!inputMessage.trim() || isSendingMessage}
             >
               {isSendingMessage ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -382,45 +278,12 @@ const Chatbot: React.FC = () => {
   );
 };
 
-// Chat History Item Component
-const ChatHistoryItem: React.FC<{
-  chat: ChatType;
-  isActive: boolean;
-  onSelect: () => void;
-  onDelete: () => void;
-}> = ({ chat, isActive, onSelect, onDelete }) => {
-  return (
-    <div
-      className={`group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors mb-1 ${
-        isActive ? 'bg-primary/10 border border-primary/20' : 'hover:bg-accent'
-      }`}
-      onClick={onSelect}
-    >
-      <div className="flex items-center space-x-3 flex-1 min-w-0">
-        <MessageSquare className="h-4 w-4 flex-shrink-0" />
-        <span className="text-sm truncate">{chat.title || 'New Chat'}</span>
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-};
 
-// Message Bubble Component
-const MessageBubble: React.FC<{ 
-  message: MessageType; 
-  isRTL: boolean;
+// Message Bubble
+const MessageBubble: React.FC<{
+  message: MessageType;
   language: string;
-}> = ({ message, isRTL, language }) => {
+}> = ({ message, language }) => {
   const isUser = message.role === 'user';
 
   const formatTime = (dateString: string) => {
@@ -438,9 +301,8 @@ const MessageBubble: React.FC<{
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}>
       <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3 max-w-[80%]`}>
         <div
-          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-            isUser ? 'bg-gradient-to-br from-green-500 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-purple-600'
-          }`}
+          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isUser ? 'bg-gradient-to-br from-green-500 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-purple-600'
+            }`}
         >
           {isUser ? (
             <UserIcon className="h-4 w-4 text-white" />
@@ -449,11 +311,10 @@ const MessageBubble: React.FC<{
           )}
         </div>
         <div
-          className={`rounded-2xl px-4 py-3 ${
-            isUser
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-          }`}
+          className={`rounded-2xl px-4 py-3 ${isUser
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+            }`}
           dir={message.language === 'ar' ? 'rtl' : 'ltr'}
         >
           <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>

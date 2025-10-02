@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -49,11 +50,24 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   className = '',
 }) => {
   const { language, setLanguage } = useLanguage();
+  const { isAuthenticated, updateLanguage } = useAuth();
 
   const currentLanguage = languages.find((lang) => lang.code === language);
 
-  const handleLanguageChange = (langCode: Language) => {
+  const handleLanguageChange = async (langCode: Language) => {
+    // Update local state immediately for instant UI feedback
     setLanguage(langCode);
+    
+    // Sync with backend if user is authenticated
+    if (isAuthenticated) {
+      try {
+        await updateLanguage(langCode);
+        console.log(`Language preference synced to backend: ${langCode}`);
+      } catch (error) {
+        console.error('Failed to sync language preference with backend:', error);
+        // Language is still changed locally even if backend sync fails
+      }
+    }
   };
 
   return (

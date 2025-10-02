@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowRight, Sparkles, Zap, Shield } from 'lucide-react';
 
 const Hero: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -48,9 +48,27 @@ const Hero: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <Button size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all group" onClick={handleGetStarted}>
-              {t('hero.getStarted')}
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all group" 
+              onClick={handleGetStarted}
+            >
+              {isRTL ? (
+                <div className="flex items-center">
+                  {t('hero.getStarted')}
+                  <ArrowRight 
+                    className="h-5 w-5 mr-2 transform rotate-180 group-hover:-translate-x-1 transition-transform"
+                  />
+                  
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  {t('hero.getStarted')}
+                  <ArrowRight 
+                    className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform"
+                  />
+                </div>
+              )}
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={handleLearnMore}>
               {t('hero.learnMore')}

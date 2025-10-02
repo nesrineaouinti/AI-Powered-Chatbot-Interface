@@ -10,7 +10,6 @@ import {
   Bot,
   Calendar,
   TrendingUp,
-  Settings as SettingsIcon,
   LogOut,
   Edit,
   Sparkles,
@@ -115,10 +114,7 @@ const Profile: React.FC = () => {
                   <Edit className="h-4 w-4 mr-2" />
                   {t('profile.actions.editProfile')}
                 </Button>
-                <Button className="w-full" variant="outline">
-                  <SettingsIcon className="h-4 w-4 mr-2" />
-                  {t('profile.actions.settings')}
-                </Button>
+                
                 <Button 
                   className="w-full" 
                   variant="destructive"
@@ -250,40 +246,7 @@ const Profile: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Activity Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{isRTL ? 'رؤى النشاط' : 'Activity Insights'}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">87%</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isRTL ? 'معدل الرضا' : 'Satisfaction Rate'}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20">
-                    <div className="text-2xl font-bold text-green-600 mb-1">42</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isRTL ? 'متوسط الرسائل/محادثة' : 'Avg Messages/Chat'}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20">
-                    <div className="text-2xl font-bold text-purple-600 mb-1">15</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isRTL ? 'أيام النشاط' : 'Active Days'}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20">
-                    <div className="text-2xl font-bold text-orange-600 mb-1">3.2k</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isRTL ? 'إجمالي الرسائل' : 'Total Messages'}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          
           </div>
         </div>
 

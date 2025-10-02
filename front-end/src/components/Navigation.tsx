@@ -74,13 +74,13 @@ const Navigation: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
             <Bot className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold gradient-text">AI Chatbot</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-8`}>
             <button
               onClick={() => scrollToSection('home')}
               className="text-foreground hover:text-primary transition-colors font-medium"
@@ -102,13 +102,13 @@ const Navigation: React.FC = () => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-4`}>
             {/* Language Switcher */}
             <LanguageSwitcher variant="ghost" showLabel={false} />
 
             {/* Chat Access - Only show if authenticated */}
             {isAuthenticated && (
-              <Button variant="outline" className="space-x-2" onClick={() => navigate('/chatbot')}>
+              <Button variant="outline" className={`gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => navigate('/chatbot')}>
                 <MessageSquare className="h-4 w-4" />
                 <span>{t('navigation.chatbot')}</span>
               </Button>
@@ -134,24 +134,24 @@ const Navigation: React.FC = () => {
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.username}
                   </div>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>
-                    <User className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem className={`cursor-pointer gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => navigate('/profile')}>
+                    <User className="h-4 w-4" />
                     <span>{t('navigation.profile')}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem className={`cursor-pointer text-red-600 gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={handleLogout}>
+                    <LogOut className="h-4 w-4" />
                     <span>{t('navigation.logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="outline" onClick={() => navigate('/signin')}>
-                  <LogIn className="mr-2 h-4 w-4" />
+                <Button variant="outline" className={`gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => navigate('/signin')}>
+                  <LogIn className="h-4 w-4" />
                   {t('navigation.login')}
                 </Button>
-                <Button onClick={() => navigate('/signup')}>
-                  <UserPlus className="mr-2 h-4 w-4" />
+                <Button className={`gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => navigate('/signup')}>
+                  <UserPlus className="h-4 w-4" />
                   {t('navigation.signup')}
                 </Button>
               </>
@@ -159,7 +159,7 @@ const Navigation: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className={`md:hidden flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
             <LanguageSwitcher variant="ghost" showLabel={false} />
             <Button
               variant="ghost"
@@ -201,7 +201,7 @@ const Navigation: React.FC = () => {
                 <>
                   {/* User info */}
                   <div className="px-4 py-2 bg-accent rounded-md">
-                    <div className="flex items-center space-x-2">
+                    <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                       {user?.profile_picture ? (
                         <img 
                           src={user.profile_picture} 
@@ -214,26 +214,26 @@ const Navigation: React.FC = () => {
                       <span className="font-medium">{user?.username}</span>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full space-x-2" onClick={() => { navigate('/chatbot'); setIsMobileMenuOpen(false); }}>
+                  <Button variant="outline" className={`w-full gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => { navigate('/chatbot'); setIsMobileMenuOpen(false); }}>
                     <MessageSquare className="h-4 w-4" />
                     <span>{t('navigation.chatbot')}</span>
                   </Button>
-                  <Button variant="outline" className="w-full space-x-2" onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}>
+                  <Button variant="outline" className={`w-full gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}>
                     <User className="h-4 w-4" />
                     <span>{t('navigation.profile')}</span>
                   </Button>
-                  <Button variant="destructive" className="w-full space-x-2" onClick={handleLogout}>
+                  <Button variant="destructive" className={`w-full gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={handleLogout}>
                     <LogOut className="h-4 w-4" />
                     <span>{t('navigation.logout')}</span>
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="default" className="w-full space-x-2" onClick={() => { navigate('/signin'); setIsMobileMenuOpen(false); }}>
+                  <Button variant="default" className={`w-full gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => { navigate('/signin'); setIsMobileMenuOpen(false); }}>
                     <LogIn className="h-4 w-4" />
                     <span>{t('navigation.login')}</span>
                   </Button>
-                  <Button variant="secondary" className="w-full space-x-2" onClick={() => { navigate('/signup'); setIsMobileMenuOpen(false); }}>
+                  <Button variant="secondary" className={`w-full gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} onClick={() => { navigate('/signup'); setIsMobileMenuOpen(false); }}>
                     <UserPlus className="h-4 w-4" />
                     <span>{t('navigation.signup')}</span>
                   </Button>

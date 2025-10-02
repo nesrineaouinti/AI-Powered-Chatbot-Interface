@@ -118,7 +118,7 @@ class ChatViewSet(viewsets.ModelViewSet):
                 chat=chat,
                 role='assistant',
                 content=response_text,
-                ai_model=model_used,
+                ai_model=preferred_model,
                 language=language,
                 tokens_used=tokens_used,
                 response_time=response_time

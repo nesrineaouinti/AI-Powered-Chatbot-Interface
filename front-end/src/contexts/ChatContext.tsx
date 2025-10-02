@@ -9,7 +9,6 @@ import { chatService } from '@/services/chatService';
 import {
   Chat,
   ChatDetail,
-  Message,
   SendMessageRequest,
   CreateChatRequest,
   AIModelInfo,

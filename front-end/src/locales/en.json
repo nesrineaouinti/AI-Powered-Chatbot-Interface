@@ -51,7 +51,7 @@
   },
   "about": {
     "title": "About Our Platform",
-    "subtitle": "Building the future of AI-powered communication",
+    "subtitle": "Your future AI-powered assistant",
     "description": "We are dedicated to creating intelligent solutions that enhance human-AI interaction. Our chatbot leverages state-of-the-art natural language processing to understand and respond to your needs with unprecedented accuracy and efficiency.",
     "mission": {
       "title": "Our Mission",
@@ -90,6 +90,7 @@
       "subtitle": "Create your account to get started",
       "description": "Sign up to start chatting with our AI assistant",
       "button": "Create Account",
+      "creating": "Creating account...",
       "haveAccount": "Already have an account?"
     },
     "fields": {
@@ -100,11 +101,11 @@
       "confirmPassword": "Confirm Password",
       "fullName": "Full Name",
       "fullNamePlaceholder": "John Doe",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
       "passwordHint": "Must be at least 8 characters"
     },
     "options": {
-      "forgotPassword": "Forgot password?",
-      "rememberMe": "Remember me for 30 days",
       "orContinueWith": "Or continue with",
       "orSignUpWith": "Or sign up with",
       "google": "Google",
@@ -119,6 +120,17 @@
   },
   "chat": {
     "newChat": "New Chat",
+    "search": "Search...",
+    "showArchived": "Show Archived",
+    "hideArchived": "Hide Archived",
+    "noMatching": "No matching chats",
+    "noChats": "No chats yet",
+    "untitled": "Untitled Chat",
+    "messages": "messages",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this chat?",
     "createChat": "Create Chat",
     "chatHistory": "Chat History",
     "deleteChat": "Delete Chat",
@@ -156,8 +168,9 @@
       "memberSince": "Member Since"
     },
     "actions": {
-      "editProfile": "Edit Profile",
-      "settings": "Settings"
+      "editProfile": "Edit Profile"
+
+    
     }
   },
   "common": {
@@ -199,5 +212,8 @@
     "messageSent": "Message sent",
     "copySuccess": "Copied to clipboard",
     "copyError": "Failed to copy"
+  },
+  "footer": {
+    "copyright": "AI Chatbot. All rights reserved."
   }
 }

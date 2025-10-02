@@ -90,6 +90,7 @@
       "subtitle": "أنشئ حسابك للبدء",
       "description": "سجل للبدء في الدردشة مع مساعدنا الذكي",
       "button": "إنشاء حساب",
+      "creating": "جاري إنشاء الحساب...",
       "haveAccount": "لديك حساب بالفعل؟"
     },
     "fields": {
@@ -100,11 +101,11 @@
       "confirmPassword": "تأكيد كلمة المرور",
       "fullName": "الاسم الكامل",
       "fullNamePlaceholder": "أحمد محمد",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
       "passwordHint": "يجب أن تكون 8 أحرف على الأقل"
     },
     "options": {
-      "forgotPassword": "نسيت كلمة المرور؟",
-      "rememberMe": "تذكرني لمدة 30 يوماً",
       "orContinueWith": "أو تابع باستخدام",
       "orSignUpWith": "أو سجل باستخدام",
       "google": "جوجل",
@@ -124,6 +125,17 @@
     "deleteChat": "حذف المحادثة",
     "clearHistory": "مسح السجل",
     "typeMessage": "اكتب رسالتك...",
+    "search": "بحث...",
+    "showArchived": "عرض المؤرشفة",
+    "hideArchived": "إخفاء المؤرشفة",
+    "noMatching": "لا توجد محادثات مطابقة",
+    "noChats": "لا توجد محادثات بعد",
+    "untitled": "محادثة بدون عنوان",
+    "messages": "رسالة",
+    "archive": "أرشفة",
+    "unarchive": "إلغاء الأرشفة",
+    "delete": "حذف",
+    "confirmDelete": "هل أنت متأكد من حذف هذه المحادثة؟",
     "send": "إرسال",
     "emptyState": {
       "title": "ابدأ محادثة جديدة",
@@ -156,8 +168,8 @@
       "memberSince": "عضو منذ"
     },
     "actions": {
-      "editProfile": "تعديل الملف",
-      "settings": "الإعدادات"
+      "editProfile": "تعديل الملف"
+
     }
   },
   "common": {
@@ -199,5 +211,8 @@
     "messageSent": "تم إرسال الرسالة",
     "copySuccess": "تم النسخ إلى الحافظة",
     "copyError": "فشل النسخ"
+  },
+  "footer": {
+    "copyright": "المساعد الذكي. جميع الحقوق محفوظة."
   }
 }
