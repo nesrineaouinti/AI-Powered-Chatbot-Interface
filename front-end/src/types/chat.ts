@@ -63,6 +63,7 @@ export interface UserSummary {
   updated_at: string;
 }
 
+// Individual AI model info
 export interface AIModelInfo {
   name: AIModel;
   is_active: boolean;
@@ -70,6 +71,13 @@ export interface AIModelInfo {
   supports_arabic: boolean;
 }
 
+// API response for list of AI models
+export interface AIModelListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AIModelInfo[];
+}
 export interface SendMessageRequest {
   content: string;
   language: Language;

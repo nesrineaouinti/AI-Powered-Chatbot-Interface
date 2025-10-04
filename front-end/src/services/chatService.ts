@@ -189,7 +189,16 @@ class ChatService {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<AIModelInfo[]>(response);
+  
+    const data = await this.handleResponse<any>(response);
+  
+    // If the response is paginated, return results array
+    if (data && typeof data === 'object' && 'results' in data) {
+      return data.results as AIModelInfo[];
+    }
+  
+    // Otherwise return as is
+    return data as AIModelInfo[];
   }
 
   // ==================== Helper Methods ====================

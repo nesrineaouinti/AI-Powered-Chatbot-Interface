@@ -11,8 +11,8 @@ import {
   ChatDetail,
   SendMessageRequest,
   CreateChatRequest,
-  AIModelInfo,
   Language,
+  AIModelInfo,
 } from '@/types/chat';
 
 interface ChatContextType {
@@ -26,7 +26,7 @@ interface ChatContextType {
 
   // Chat operations
   loadChats: () => Promise<void>;
-  loadChat: (chatId: number) => Promise<void>;
+  loadChat: (chatId: number) => Promise<ChatDetail | null>;
   createChat: (language: Language, title?: string) => Promise<Chat | null>;
   deleteChat: (chatId: number) => Promise<void>;
   archiveChat: (chatId: number, isArchived: boolean) => Promise<void>;
@@ -85,10 +85,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const loadChat = useCallback(async (chatId: number) => {
-    if (!chatId || chatId === undefined) {
+  const loadChat = useCallback(async (chatId: number): Promise<ChatDetail | null> => {
+    if (!chatId) {
       console.error('loadChat called with invalid chatId:', chatId);
-      return;
+      return null;
     }
 
     setIsLoading(true);
@@ -97,10 +97,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const data = await chatService.getChat(chatId);
       setCurrentChat(data);
+      return data; // ✅ return the chat so the caller can use it
     } catch (err: any) {
       console.error('Failed to load chat:', err);
       setError('Failed to load chat');
       setCurrentChat(null);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -203,61 +205,25 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...(aiModel && { ai_model: aiModel as any }),
       };
 
-      const response = await chatService.sendMessage(chatId, data);
+      await chatService.sendMessage(chatId, data);
 
-      // Update current chat with new messages
-      if (currentChat?.id === chatId) {
-        setCurrentChat(prev => {
-          if (!prev) return null;
-          const updatedMessages = [...prev.messages, response.user_message, response.ai_message];
-
-          // Dynamically generate title from first message if empty
-          const title =
-            prev.title ||
-            (updatedMessages.length > 0
-              ? updatedMessages[0].content.split(' ').slice(0, 5).join(' ') +
-              (updatedMessages[0].content.split(' ').length > 5 ? '...' : '')
-              : 'Untitled');
-
-          return {
-            ...prev,
-            messages: updatedMessages,
-            message_count: prev.message_count + 2,
-            updated_at: response.ai_message.created_at,
-            title,
-          };
-        });
-      }
-
+      // ✅ Always reload the chat from the backend (to get updated messages)
+      const updatedChat = await chatService.getChat(chatId);
+      setCurrentChat(updatedChat);
       // Update chat in the sidebar list
+      // ✅ Also update the sidebar chat list
       setChats(prev =>
-        (Array.isArray(prev) ? prev : []).map(chat => {
-          if (chat.id === chatId) {
-            const updatedMessages = currentChat
-              ? [...currentChat.messages, response.user_message, response.ai_message]
-              : [];
-
-            const title =
-              chat.title ||
-              (updatedMessages.length > 0
-                ? updatedMessages[0].content.split(' ').slice(0, 5).join(' ') +
-                (updatedMessages[0].content.split(' ').length > 5 ? '...' : '')
-                : 'Untitled');
-
-            return {
+        (Array.isArray(prev) ? prev : []).map(chat =>
+          chat.id === chatId
+            ? {
               ...chat,
-              message_count: chat.message_count + 2,
-              updated_at: response.ai_message.created_at,
-              last_message: {
-                content: response.ai_message.content,
-                role: response.ai_message.role,
-                created_at: response.ai_message.created_at,
-              },
-              title, // <-- dynamic title update here
-            };
-          }
-          return chat;
-        })
+              message_count: updatedChat.message_count,
+              updated_at: updatedChat.updated_at,
+              last_message: updatedChat.last_message,
+              title: updatedChat.title || chat.title,
+            }
+            : chat
+        )
       );
 
     } catch (err: any) {
@@ -279,11 +245,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadAIModels = useCallback(async () => {
     try {
-      const models = await chatService.getAIModels();
-      setAvailableModels(models);
+      const models: AIModelInfo[] = await chatService.getAIModels(); // already returns array
+      setAvailableModels(models); // directly store it
     } catch (err: any) {
       console.error('Failed to load AI models:', err);
-      // Don't set error state for this, as it's not critical
     }
   }, []);
 
