@@ -91,6 +91,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # increase timeout from default 5s
+        }
     }
 }
 
@@ -208,19 +211,9 @@ RATELIMIT_USE_CACHE = config('RATELIMIT_USE_CACHE', default='default')
 # AI Model Configuration
 # API Keys for different AI models (store in environment variables in production)
 GROQ_API_KEY = config('GROQ_API_KEY', default='')
-OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
-ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
-GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-DEEPSEEK_API_KEY = config('DEEPSEEK_API_KEY', default='')
-GROK_API_KEY = config('GROK_API_KEY', default='')
 
 # AI Model Endpoints
 GROQ_API_ENDPOINT = config('GROQ_API_ENDPOINT', default='https://api.groq.com/openai/v1/chat/completions')
-OPENAI_API_ENDPOINT = config('OPENAI_API_ENDPOINT', default='https://api.openai.com/v1/chat/completions')
-ANTHROPIC_API_ENDPOINT = config('ANTHROPIC_API_ENDPOINT', default='https://api.anthropic.com/v1/messages')
-GEMINI_API_ENDPOINT = config('GEMINI_API_ENDPOINT', default='https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent')
-DEEPSEEK_API_ENDPOINT = config('DEEPSEEK_API_ENDPOINT', default='https://api.deepseek.com/v1/chat/completions')
-GROK_API_ENDPOINT = config('GROK_API_ENDPOINT', default='https://api.x.ai/v1/chat/completions')
 OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
 LLAMA_API_ENDPOINT = config('LLAMA_API_ENDPOINT', default=f'{OLLAMA_BASE_URL}/api/chat')
 

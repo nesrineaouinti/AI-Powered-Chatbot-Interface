@@ -7,7 +7,7 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Message } from '@/types/chat';
-import { Bot, User, Loader2 } from 'lucide-react';
+import { Bot, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 

@@ -5,7 +5,7 @@
 
 export type Language = 'en' | 'ar';
 export type MessageRole = 'user' | 'assistant' | 'system';
-export type AIModel = 'groq' | 'grok' | 'deepseek' | 'llama' | 'openai' | 'gemini' | 'anthropic' | 'other';
+export type AIModel = 'groq' | 'llama' | 'other';
 
 export interface Message {
   id: number;
@@ -55,7 +55,7 @@ export interface UserSummary {
   language: Language;
   summary_text: string;
   topics: string[];
-  preferences: Record<string, any>;
+  common_queries: string[];
   chat_count: number;
   message_count: number;
   ai_model_used: AIModel;
@@ -88,7 +88,8 @@ export interface CreateChatRequest {
 }
 
 export interface GenerateSummaryRequest {
-  language: Language;
+  language?: Language;
+  userId : number
 }
 
 export interface GenerateSummaryResponse {

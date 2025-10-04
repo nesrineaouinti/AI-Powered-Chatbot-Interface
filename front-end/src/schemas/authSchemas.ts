@@ -1,57 +1,13 @@
 import { z } from 'zod';
+import { getValidationMessages } from '../lib/translations';
 
 /**
- * Authentication Validation Schemas with Localized Error Messages
- */
-
-// Error messages in English and Arabic
-export const errorMessages = {
-  en: {
-    required: 'This field is required',
-    email: 'Please enter a valid email address',
-    username: {
-      min: 'Username must be at least 3 characters',
-      max: 'Username must be at most 20 characters',
-      pattern: 'Username can only contain letters, numbers, and underscores',
-    },
-    password: {
-      min: 'Password must be at least 8 characters',
-      max: 'Password must be at most 128 characters',
-      uppercase: 'Password must contain at least one uppercase letter',
-      lowercase: 'Password must contain at least one lowercase letter',
-      number: 'Password must contain at least one number',
-      special: 'Password must contain at least one special character',
-    },
-    passwordMatch: 'Passwords do not match',
-  },
-  ar: {
-    required: 'هذا الحقل مطلوب',
-    email: 'يرجى إدخال عنوان بريد إلكتروني صالح',
-    username: {
-      min: 'يجب أن يكون اسم المستخدم 3 أحرف على الأقل',
-      max: 'يجب ألا يتجاوز اسم المستخدم 20 حرفًا',
-      pattern: 'يمكن أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات سفلية فقط',
-    },
-    password: {
-      min: 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
-      max: 'يجب ألا تتجاوز كلمة المرور 128 حرفًا',
-      uppercase: 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل',
-      lowercase: 'يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل',
-      number: 'يجب أن تحتوي كلمة المرور على رقم واحد على الأقل',
-      special: 'يجب أن تحتوي كلمة المرور على حرف خاص واحد على الأقل',
-    },
-    passwordMatch: 'كلمات المرور غير متطابقة',
-  },
-};
-
-// Get error messages based on language
-export const getErrorMessages = (lang: 'en' | 'ar' = 'en') => errorMessages[lang];
 
 /**
  * Sign In Schema
  */
 export const signInSchema = (lang: 'en' | 'ar' = 'en') => {
-  const messages = getErrorMessages(lang);
+  const messages = getValidationMessages(lang);
   
   return z.object({
     username_or_email: z
@@ -70,7 +26,7 @@ export type SignInFormData = z.infer<ReturnType<typeof signInSchema>>;
  * Sign Up Schema
  */
 export const signUpSchema = (lang: 'en' | 'ar' = 'en') => {
-  const messages = getErrorMessages(lang);
+  const messages = getValidationMessages(lang);
   
   return z.object({
     username: z
@@ -113,7 +69,7 @@ export type SignUpFormData = z.infer<ReturnType<typeof signUpSchema>>;
  * Change Password Schema
  */
 export const changePasswordSchema = (lang: 'en' | 'ar' = 'en') => {
-  const messages = getErrorMessages(lang);
+  const messages = getValidationMessages(lang);
   
   return z.object({
     old_password: z
@@ -144,7 +100,7 @@ export type ChangePasswordFormData = z.infer<ReturnType<typeof changePasswordSch
  * Profile Update Schema
  */
 export const profileUpdateSchema = (lang: 'en' | 'ar' = 'en') => {
-  const messages = getErrorMessages(lang);
+  const messages = getValidationMessages(lang);
   
   return z.object({
     username: z

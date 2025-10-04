@@ -13,6 +13,7 @@ export interface User {
   is_oauth_user: boolean;
   created_at: string;
   updated_at: string;
+  summary_id:number
 }
 
 export interface AuthTokens {
@@ -66,22 +67,34 @@ class AuthService {
   }
 
   // Regular login
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/login/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+  // Regular login
+async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/login/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(JSON.stringify(error));
+  if (!response.ok) {
+    let errorData: any;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { error: 'Unknown server error' };
     }
 
-    return response.json();
+    throw {
+      response: {
+        status: response.status,
+        data: errorData,
+      },
+    };
   }
+
+  return response.json();
+}
 
   // Google OAuth login/signup
   async googleAuth(data: GoogleAuthData): Promise<AuthResponse> {

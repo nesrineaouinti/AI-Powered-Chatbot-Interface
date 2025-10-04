@@ -33,7 +33,7 @@ class MessageCreateSerializer(serializers.Serializer):
     content = serializers.CharField(required=True, max_length=10000)
     language = serializers.ChoiceField(choices=['en', 'ar'], default='en')
     ai_model = serializers.ChoiceField(
-        choices=['groq', 'openai', 'anthropic', 'gemini', 'deepseek', 'grok', 'llama', 'other'],
+        choices=['groq','llama', 'other'],
         required=False,
         allow_null=True
     )
@@ -115,7 +115,7 @@ class UserSummarySerializer(serializers.ModelSerializer):
         model = UserSummary
         fields = [
             'id', 'user', 'user_username', 'language', 'summary_text',
-            'topics', 'preferences', 'chat_count', 'message_count',
+            'topics', 'common_queries', 'chat_count', 'message_count',
             'ai_model_used', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']

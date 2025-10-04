@@ -291,7 +291,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ isSidebarOpen, setIsSidebarOp
 
 export default ChatSidebar;
 
-const ChatItemFull = ({ chat, isActive, onSelect, onDelete, onArchive, formatDate, t, setIsSidebarOpen }: any) => (
+const ChatItemFull = ({ chat, isActive, onSelect, onDelete, onArchive, formatDate, t }: any) => (
   <div
     onClick={() => onSelect(chat)}
     className={`group relative p-3 rounded-lg cursor-pointer transition-colors mb-1 w-full
@@ -316,9 +316,7 @@ const ChatItemFull = ({ chat, isActive, onSelect, onDelete, onArchive, formatDat
         <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
           <span>{formatDate(chat.updated_at)}</span>
           <span>• {chat.message_count} {t('chat.messages')}</span>
-          <span className={`px-1.5 py-0.5 rounded ${chat.language === 'ar' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-            {chat.language.toUpperCase()}
-          </span>
+    
         </div>
       </div>
       <DropdownMenu>

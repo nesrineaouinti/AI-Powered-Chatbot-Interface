@@ -30,13 +30,13 @@ interface ChatContextType {
   createChat: (language: Language, title?: string) => Promise<Chat | null>;
   deleteChat: (chatId: number) => Promise<void>;
   archiveChat: (chatId: number, isArchived: boolean) => Promise<void>;
-  
+
   // Message operations
   sendMessage: (chatId: number, content: string, language: Language, aiModel?: string) => Promise<void>;
-  
+
   // AI Models
   loadAIModels: () => Promise<void>;
-  
+
   // Utilities
   clearError: () => void;
   setCurrentChat: (chat: ChatDetail | null) => void;
@@ -46,7 +46,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentChat, setCurrentChat] = useState<ChatDetail | null>(null);
   const [availableModels, setAvailableModels] = useState<AIModelInfo[]>([]);
@@ -68,7 +68,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('loadChats: Starting to load chats');
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await chatService.getChats();
       console.log('loadChats: Successfully loaded chats:', data);
@@ -90,10 +90,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('loadChat called with invalid chatId:', chatId);
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await chatService.getChat(chatId);
       setCurrentChat(data);
@@ -108,27 +108,27 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createChat = useCallback(async (language: Language, title?: string): Promise<Chat | null> => {
     if (!user) return null;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data: CreateChatRequest = { language, title };
       const newChat = await chatService.createChat(data);
-      
+
       console.log('Chat created:', newChat);
-      
+
       // Validate chat has an ID
       if (!newChat || !newChat.id) {
         throw new Error('Invalid chat response: missing ID');
       }
-      
+
       // Add to chats list
       setChats(prev => [newChat, ...(Array.isArray(prev) ? prev : [])]);
-      
+
       // Load the new chat with messages
       await loadChat(newChat.id);
-      
+
       return newChat;
     } catch (err: any) {
       console.error('Failed to create chat:', err);
@@ -142,13 +142,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteChat = useCallback(async (chatId: number) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await chatService.deleteChat(chatId);
-      
+
       // Remove from chats list
       setChats(prev => (Array.isArray(prev) ? prev : []).filter(chat => chat.id !== chatId));
-      
+
       // Clear current chat if it was deleted
       if (currentChat?.id === chatId) {
         setCurrentChat(null);
@@ -165,15 +165,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const archiveChat = useCallback(async (chatId: number, isArchived: boolean) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const result = await chatService.archiveChat(chatId, isArchived);
-      
+
       // Update chats list
-      setChats(prev => (Array.isArray(prev) ? prev : []).map(chat => 
+      setChats(prev => (Array.isArray(prev) ? prev : []).map(chat =>
         chat.id === chatId ? result.chat : chat
       ));
-      
+
       // Update current chat if it's the one being archived
       if (currentChat?.id === chatId) {
         setCurrentChat(prev => prev ? { ...prev, is_archived: isArchived } : null);
@@ -195,49 +195,74 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ) => {
     setIsSendingMessage(true);
     setError(null);
-    
+
     try {
       const data: SendMessageRequest = {
         content,
         language,
         ...(aiModel && { ai_model: aiModel as any }),
       };
-      
+
       const response = await chatService.sendMessage(chatId, data);
-      
+
       // Update current chat with new messages
       if (currentChat?.id === chatId) {
         setCurrentChat(prev => {
           if (!prev) return null;
+          const updatedMessages = [...prev.messages, response.user_message, response.ai_message];
+
+          // Dynamically generate title from first message if empty
+          const title =
+            prev.title ||
+            (updatedMessages.length > 0
+              ? updatedMessages[0].content.split(' ').slice(0, 5).join(' ') +
+              (updatedMessages[0].content.split(' ').length > 5 ? '...' : '')
+              : 'Untitled');
+
           return {
             ...prev,
-            messages: [...prev.messages, response.user_message, response.ai_message],
+            messages: updatedMessages,
             message_count: prev.message_count + 2,
             updated_at: response.ai_message.created_at,
+            title,
           };
         });
       }
-      
-      // Update chat in the list
-      setChats(prev => (Array.isArray(prev) ? prev : []).map(chat => {
-        if (chat.id === chatId) {
-          return {
-            ...chat,
-            message_count: chat.message_count + 2,
-            updated_at: response.ai_message.created_at,
-            last_message: {
-              content: response.ai_message.content,
-              role: response.ai_message.role,
-              created_at: response.ai_message.created_at,
-            },
-          };
-        }
-        return chat;
-      }));
-      
+
+      // Update chat in the sidebar list
+      setChats(prev =>
+        (Array.isArray(prev) ? prev : []).map(chat => {
+          if (chat.id === chatId) {
+            const updatedMessages = currentChat
+              ? [...currentChat.messages, response.user_message, response.ai_message]
+              : [];
+
+            const title =
+              chat.title ||
+              (updatedMessages.length > 0
+                ? updatedMessages[0].content.split(' ').slice(0, 5).join(' ') +
+                (updatedMessages[0].content.split(' ').length > 5 ? '...' : '')
+                : 'Untitled');
+
+            return {
+              ...chat,
+              message_count: chat.message_count + 2,
+              updated_at: response.ai_message.created_at,
+              last_message: {
+                content: response.ai_message.content,
+                role: response.ai_message.role,
+                created_at: response.ai_message.created_at,
+              },
+              title, // <-- dynamic title update here
+            };
+          }
+          return chat;
+        })
+      );
+
     } catch (err: any) {
       console.error('Failed to send message:', err);
-      
+
       // Parse error message
       try {
         const errorData = JSON.parse(err.message);
@@ -245,7 +270,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         setError('Failed to send message');
       }
-      
+
       throw err;
     } finally {
       setIsSendingMessage(false);

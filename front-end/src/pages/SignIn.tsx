@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,19 +11,13 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { Spinner } from '@/components/ui/Spinner';
+import { SignInFormData, signInSchema } from '@/schemas/authSchemas';
 
-// ---------------- Zod Schema ----------------
-const loginSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
-});
-
-type LoginFormInputs = z.infer<typeof loginSchema>;
 
 const SignIn: React.FC = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { login, googleLogin, loading } = useAuth();
+  const { login, googleLogin, submitting } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -33,18 +26,29 @@ const SignIn: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormInputs>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema(language as 'en' | 'ar')),
   });
+  const parseSigninError = (err: any): string => {
+    try {
+      const data = err.response?.data || JSON.parse(err.message || '{}');
 
-  const onSubmit = async (data: LoginFormInputs) => {
+      if (data.email) return t('errors.emailAlreadyExists');
+      if (data.username) return data.username[0];
+      if (data.password) return t('errors.weakPassword');
+    } catch {
+      return t('errors.loginFailed');
+    }
+    return t('errors.loginFailed');
+  };
+
+  const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
     try {
-      await login({ username_or_email: data.email, password: data.password });
+      await login({ username_or_email: data.username_or_email, password: data.password });
       navigate('/chatbot');
     } catch (err: any) {
-      setAuthError(err.backendMessage || 'Invalid credentials');
-    }
+      setAuthError(parseSigninError(err));    }
   };
 
   const handleGoogleSuccess = async (token: string) => {
@@ -89,11 +93,11 @@ const SignIn: React.FC = () => {
                     id="email"
                     type="email"
                     placeholder={t('auth.fields.emailPlaceholder')}
-                    {...register('email')}
+                    {...register('username_or_email')}
                     className="pl-10"
                   />
                 </div>
-                {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
+                {errors.username_or_email && <p className="text-red-600 text-sm mt-1">{errors.username_or_email.message}</p>}
               </div>
 
               {/* Password */}
@@ -124,15 +128,14 @@ const SignIn: React.FC = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
-                asChild={false} // important: render real <button>
+                asChild={false}
                 className="w-full flex items-center justify-center"
                 size="lg"
-                disabled={isSubmitting || loading}
+                disabled={isSubmitting || submitting}
               >
-                {isSubmitting || loading ? <Spinner /> : t('auth.signIn.button')}
-                {!isSubmitting && !loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                {isSubmitting || submitting ? <Spinner /> : t('auth.signIn.button')}
+                {!isSubmitting && !submitting && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
-
               {/* Error */}
               {authError && (
                 <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

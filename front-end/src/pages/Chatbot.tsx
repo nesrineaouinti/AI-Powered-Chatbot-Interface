@@ -154,11 +154,23 @@ const Chatbot: React.FC = () => {
         />
       )}
       {/* Sidebar */}
-      <div className={`
-        ${isDesktop ? 'relative' : 'fixed top-16 h-[calc(100vh-4rem)] z-40 bg-background'}
-        ${isSidebarOpen ? (isDesktop ? 'w-80' : 'w-72 translate-x-0') : (isDesktop ? 'w-16' : 'w-72 -translate-x-full')}
-        transition-all duration-300 ease-in-out
-      `}>
+      <div
+        className={`
+    ${isDesktop ? 'relative' : 'fixed top-16 h-[calc(100vh-4rem)] z-40 bg-background'}
+    ${isSidebarOpen
+            ? isDesktop
+              ? 'w-80'
+              : 'w-72 translate-x-0'
+            : isDesktop
+              ? 'w-16'
+              : isRTL
+                ? 'translate-x-full w-72 right-0'
+                : '-translate-x-full w-72 left-0'}
+    ${isRTL ? (isDesktop ? 'right-0' : 'right-0') : (isDesktop ? 'left-0' : 'left-0')}
+    transition-all duration-300 ease-in-out
+  `}
+        dir={isRTL ? 'rtl' : 'ltr'}
+      >
         <ChatSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
       </div>
 
@@ -215,8 +227,8 @@ const Chatbot: React.FC = () => {
                 <Bot className="h-16 w-16 text-primary mb-4" />
                 <p className="text-muted-foreground">
                   {isRTL
-                    ? 'ابدأ محادثة جديدة مع مساعدك الذكي'
-                    : 'Start a new conversation with your AI assistant'}
+                    ? t('chat.emptyState.title')
+                    : t('chat.emptyState.title')}
                 </p>
               </div>
             ) : (

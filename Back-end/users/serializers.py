@@ -1,10 +1,11 @@
+import imp
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from .models import User
-
+from chatbot.models import UserSummary
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
@@ -91,16 +92,25 @@ class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for user profile data.
-    
-    Security: Password field is excluded from serialization
+    Automatically includes the user's summary_id if a summary exists.
     """
+    summary_id = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 
-                  'language_preference', 'profile_picture', 'is_oauth_user',
-                  'created_at', 'updated_at']
-        read_only_fields = ['id', 'is_oauth_user', 'created_at', 'updated_at']
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'language_preference', 'profile_picture', 'is_oauth_user',
+            'created_at', 'updated_at', 'summary_id'
+        ]
+        read_only_fields = ['id', 'is_oauth_user', 'created_at', 'updated_at', 'summary_id']
 
+    def get_summary_id(self, obj):
+        """
+        Return the ID of the user's summary if it exists, otherwise None.
+        """
+        summary = UserSummary.objects.filter(user=obj).first()
+        return summary.id if summary else None
 
 class ChangePasswordSerializer(serializers.Serializer):
     """

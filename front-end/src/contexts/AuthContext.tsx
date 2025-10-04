@@ -5,6 +5,7 @@ import { authService, User, LoginCredentials, SignupData } from '@/services/auth
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  submitting: boolean; 
   error: string | null;
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -25,6 +26,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false); // button-level loading
+
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -59,34 +62,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      setLoading(true);
+      setSubmitting(true);
       setError(null);
+  
       const response = await authService.login(credentials);
   
       authService.saveTokens(response.tokens);
       authService.saveUser(response.user);
       setUser(response.user);
     } catch (err: any) {
+      console.log("LOGIN ERROR:", err.response?.data);
       let backendMsg = 'Login failed';
-      if (err.response?.data?.detail) backendMsg = err.response.data.detail;
-      else if (err.response?.data?.error) backendMsg = err.response.data.error;
+  
+      // Handle common Django REST error formats
+      if (err.response?.data) {
+        const data = err.response.data;
+  
+        // Priority 1: if the API returned "error"
+        if (typeof data.error === 'string') {
+          backendMsg = data.error;
+        }
+
+        // Priority 3: fallback for validation errors { field: ["message"] }
+        else if (typeof data === 'object') {
+          const firstKey = Object.keys(data)[0];
+          if (firstKey && Array.isArray(data[firstKey])) {
+            backendMsg = data[firstKey][0];
+          }
+        }
+      }
   
       setError(backendMsg);
   
-      // Keep original error with extra field
+      // attach backend message for UI-specific handling (optional)
       err.backendMessage = backendMsg;
-      throw err; // do NOT throw new Error(), keep original
+  
+      throw err; // rethrow to allow form-level handling
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-  
   
 
 
   const signup = async (data: SignupData) => {
     try {
-      setLoading(true);
+      setSubmitting(true);
       setError(null);
       const response = await authService.signup(data);
 
@@ -98,13 +119,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(errorMsg);
       throw err;
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const googleLogin = async (googleToken: string, languagePreference?: 'en' | 'ar') => {
     try {
-      setLoading(true);
+      setSubmitting(true);
       setError(null);
       const response = await authService.googleAuth({
         token: googleToken,
@@ -119,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(errorMsg);
       throw err;
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -221,6 +242,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     loading,
+    submitting,
     error,
     isAuthenticated: !!user,
     login,

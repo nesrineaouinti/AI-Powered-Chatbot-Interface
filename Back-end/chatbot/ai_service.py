@@ -1,6 +1,6 @@
 """
 AI Service Integration Layer
-Handles communication with multiple AI models (Grok, DeepSeek, LLaMA, OpenAI, Gemini)
+Handles communication with multiple AI models (Grok, LLaMA)
 with fallback support and multi-language capabilities.
 """
 
@@ -71,138 +71,6 @@ class BaseAIProvider:
             except requests.exceptions.RequestException as e:
                 raise AIServiceException(f"Request failed: {str(e)}")
 
-
-class OpenAIProvider(BaseAIProvider):
-    """OpenAI GPT provider"""
-    
-    def generate_response(self, messages: List[Dict], language: str) -> Tuple[str, int, float]:
-        if not self.api_key:
-            raise AIServiceException("OpenAI API key not configured")
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        # Add language instruction
-        system_message = {
-            "role": "system",
-            "content": f"You are a helpful assistant. Respond in {'Arabic' if language == 'ar' else 'English'}."
-        }
-        
-        payload = {
-            "model": "gpt-3.5-turbo",
-            "messages": [system_message] + messages,
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature
-        }
-        
-        try:
-            data, response_time = self._make_request(payload, headers)
-            response_text = data['choices'][0]['message']['content']
-            tokens_used = data.get('usage', {}).get('total_tokens', 0)
-            return response_text, tokens_used, response_time
-        except Exception as e:
-            logger.error(f"OpenAI error: {str(e)}")
-            raise AIServiceException(f"OpenAI error: {str(e)}")
-
-
-class GeminiProvider(BaseAIProvider):
-    """Google Gemini provider"""
-    
-    def generate_response(self, messages: List[Dict], language: str) -> Tuple[str, int, float]:
-        if not self.api_key:
-            raise AIServiceException("Gemini API key not configured")
-        
-        # Gemini uses a different format
-        endpoint = f"{self.api_endpoint}?key={self.api_key}"
-        
-        # Convert messages to Gemini format
-        prompt = self._convert_messages_to_prompt(messages, language)
-        
-        payload = {
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }],
-            "generationConfig": {
-                "temperature": self.temperature,
-                "maxOutputTokens": self.max_tokens
-            }
-        }
-        
-        headers = {"Content-Type": "application/json"}
-        
-        try:
-            start_time = time.time()
-            response = requests.post(endpoint, json=payload, headers=headers, timeout=30)
-            response_time = time.time() - start_time
-            
-            if response.status_code != 200:
-                error_msg = f"Gemini API error: status {response.status_code}"
-                try:
-                    error_detail = response.json()
-                    error_msg += f" - {error_detail}"
-                except:
-                    error_msg += f" - {response.text[:200]}"
-                raise AIServiceException(error_msg)
-            
-            data = response.json()
-            response_text = data['candidates'][0]['content']['parts'][0]['text']
-            tokens_used = data.get('usageMetadata', {}).get('totalTokenCount', 0)
-            
-            return response_text, tokens_used, response_time
-        except requests.exceptions.ConnectionError as e:
-            raise AIServiceException(f"Connection failed - Gemini API may be unreachable: {str(e)}")
-        except requests.exceptions.Timeout as e:
-            raise AIServiceException(f"Request timed out: {str(e)}")
-        except AIServiceException:
-            raise
-        except Exception as e:
-            logger.error(f"Gemini error: {str(e)}")
-            raise AIServiceException(f"Gemini error: {str(e)}")
-    
-    def _convert_messages_to_prompt(self, messages: List[Dict], language: str) -> str:
-        """Convert message history to a single prompt"""
-        lang_instruction = "Respond in Arabic." if language == 'ar' else "Respond in English."
-        prompt = f"{lang_instruction}\n\n"
-        for msg in messages:
-            role = "User" if msg['role'] == 'user' else "Assistant"
-            prompt += f"{role}: {msg['content']}\n"
-        return prompt
-
-
-class DeepSeekProvider(BaseAIProvider):
-    """DeepSeek AI provider"""
-    
-    def generate_response(self, messages: List[Dict], language: str) -> Tuple[str, int, float]:
-        if not self.api_key:
-            raise AIServiceException("DeepSeek API key not configured")
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        system_message = {
-            "role": "system",
-            "content": f"You are a helpful assistant. Respond in {'Arabic' if language == 'ar' else 'English'}."
-        }
-        
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [system_message] + messages,
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature
-        }
-        
-        try:
-            data, response_time = self._make_request(payload, headers)
-            response_text = data['choices'][0]['message']['content']
-            tokens_used = data.get('usage', {}).get('total_tokens', 0)
-            return response_text, tokens_used, response_time
-        except Exception as e:
-            logger.error(f"DeepSeek error: {str(e)}")
-            raise AIServiceException(f"DeepSeek error: {str(e)}")
 
 
 class LLaMAProvider(BaseAIProvider):
@@ -314,83 +182,6 @@ class GroqProvider(BaseAIProvider):
             raise AIServiceException(f"Groq error: {str(e)}")
 
 
-class AnthropicProvider(BaseAIProvider):
-    """Anthropic Claude provider"""
-    
-    def generate_response(self, messages: List[Dict], language: str) -> Tuple[str, int, float]:
-        if not self.api_key:
-            raise AIServiceException("Anthropic API key not configured")
-        
-        headers = {
-            "x-api-key": self.api_key,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json"
-        }
-        
-        # Convert messages to Anthropic format
-        system_content = f"You are a helpful assistant. Respond in {'Arabic' if language == 'ar' else 'English'}."
-        
-        # Anthropic expects messages without system role in messages array
-        anthropic_messages = []
-        for msg in messages:
-            if msg['role'] != 'system':
-                anthropic_messages.append({
-                    "role": "user" if msg['role'] == 'user' else "assistant",
-                    "content": msg['content']
-                })
-        
-        payload = {
-            "model": "claude-3-haiku-20240307",
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
-            "system": system_content,
-            "messages": anthropic_messages
-        }
-        
-        try:
-            data, response_time = self._make_request(payload, headers)
-            response_text = data['content'][0]['text']
-            tokens_used = data.get('usage', {}).get('input_tokens', 0) + data.get('usage', {}).get('output_tokens', 0)
-            return response_text, tokens_used, response_time
-        except Exception as e:
-            logger.error(f"Anthropic error: {str(e)}")
-            raise AIServiceException(f"Anthropic error: {str(e)}")
-
-
-class GrokProvider(BaseAIProvider):
-    """Grok AI provider (X.AI)"""
-    
-    def generate_response(self, messages: List[Dict], language: str) -> Tuple[str, int, float]:
-        if not self.api_key:
-            raise AIServiceException("Grok API key not configured")
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        system_message = {
-            "role": "system",
-            "content": f"You are Grok, a helpful assistant. Respond in {'Arabic' if language == 'ar' else 'English'}."
-        }
-        
-        payload = {
-            "model": "grok-beta",
-            "messages": [system_message] + messages,
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature
-        }
-        
-        try:
-            data, response_time = self._make_request(payload, headers)
-            response_text = data['choices'][0]['message']['content']
-            tokens_used = data.get('usage', {}).get('total_tokens', 0)
-            return response_text, tokens_used, response_time
-        except Exception as e:
-            logger.error(f"Grok error: {str(e)}")
-            raise AIServiceException(f"Grok error: {str(e)}")
-
-
 class MockAIProvider(BaseAIProvider):
     """Mock provider for testing without API keys"""
     
@@ -412,12 +203,7 @@ class AIService:
     
     PROVIDER_MAP = {
         'groq': GroqProvider,
-        'openai': OpenAIProvider,
-        'anthropic': AnthropicProvider,
-        'gemini': GeminiProvider,
-        'deepseek': DeepSeekProvider,
         'llama': LLaMAProvider,
-        'grok': GrokProvider,
         'other': MockAIProvider,
     }
     
@@ -519,23 +305,22 @@ class AIService:
     ) -> Tuple[str, List[str], Dict]:
         """
         Generate AI-powered user summary from chat history
-        Returns: (summary_text, topics, preferences)
+        Returns: (summary_text, topics, Common queries )
         """
         # Create a prompt for summary generation
         messages = [{
             "role": "user",
             "content": f"""Analyze the following user messages and create a summary in {'Arabic' if language == 'ar' else 'English'}.
-Include:
-1. Main topics of interest
-2. Communication style
-3. Common questions or needs
-4. User preferences
+            Include:
+            1. Main topics of interest
+            2. Communication style
+            3. Common queries 
 
-User messages:
-{chr(10).join(user_messages[:50])}  # Limit to 50 messages
+            User messages:
+            {chr(10).join(user_messages)}  
 
-Provide the response in JSON format with keys: summary, topics (array), preferences (object)"""
-        }]
+            Provide the response in JSON format with keys: summary, topics (array), Common queries (array)"""
+                    }]
         
         try:
             response, model, tokens, time_taken = cls.generate_response(messages, language)
@@ -543,15 +328,15 @@ Provide the response in JSON format with keys: summary, topics (array), preferen
             # Parse JSON response (simplified - in production, use proper JSON parsing)
             import json
             try:
+                print("response",response)
                 data = json.loads(response)
+                print("data",data)
                 return (
                     data.get('summary', response),
-                    data.get('topics', []),
-                    data.get('preferences', {})
                 )
             except json.JSONDecodeError:
                 # If not valid JSON, return raw response
-                return response, [], {}
+                return response
                 
         except Exception as e:
             logger.error(f"Failed to generate user summary: {str(e)}")

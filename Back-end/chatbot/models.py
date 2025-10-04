@@ -70,11 +70,6 @@ class Message(models.Model):
     
     AI_MODEL_CHOICES = [
         ('groq', 'Groq'),
-        ('openai', 'OpenAI'),
-        ('anthropic', 'Anthropic'),
-        ('gemini', 'Gemini'),
-        ('deepseek', 'DeepSeek'),
-        ('grok', 'Grok'),
         ('llama', 'LLaMA'),
         ('other', 'Other'),
     ]
@@ -151,9 +146,9 @@ class UserSummary(models.Model):
         default=list,
         help_text="List of main topics discussed by the user"
     )
-    preferences = models.JSONField(
-        default=dict,
-        help_text="User preferences extracted from conversations"
+    common_queries = models.JSONField(
+        default=list,
+        help_text="User queries extracted from conversations"
     )
     chat_count = models.IntegerField(
         default=0,

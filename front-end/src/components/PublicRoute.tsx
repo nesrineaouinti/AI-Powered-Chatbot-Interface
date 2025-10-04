@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 
 interface PublicRouteProps {
   children: React.ReactNode;
-  restricted?: boolean; // If true, authenticated users will be redirected
+  restricted?: boolean; 
 }
 
 export const PublicRoute: React.FC<PublicRouteProps> = ({ 

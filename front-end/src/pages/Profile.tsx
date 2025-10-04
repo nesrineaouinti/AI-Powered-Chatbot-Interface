@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -14,57 +14,45 @@ import {
   Edit,
   Sparkles,
 } from 'lucide-react';
+import { chatService } from '@/services/chatService';
+import { UserSummary } from '@/types/chat';
 
 const Profile: React.FC = () => {
   const { t, isRTL } = useLanguage();
   const { user, logout } = useAuth();
+
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [summary, setSummary] = useState<UserSummary | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock stats data (can be fetched from API later)
-  const statsData = {
-    totalChats: 127,
-    favoriteModel: 'GPT-4',
-  };
+  useEffect(() => {
+    const fetchSummary = async () => {
+      if (!user) return;
+      try {
+        setLoadingSummary(true);
+        let summaryData: UserSummary | null = null;
 
-  // Mock AI-generated summary (replace with actual AI-generated content)
-  const aiSummary = {
-    en: {
-      overview: 'Based on your interactions, you are a curious learner with a strong interest in technology and programming. You frequently ask about web development, AI concepts, and best practices in software engineering.',
-      interests: [
-        'Web Development',
-        'Artificial Intelligence',
-        'React & TypeScript',
-        'UI/UX Design',
-        'Software Architecture',
-      ],
-      commonQueries: [
-        'How to implement authentication in React?',
-        'Best practices for TypeScript',
-        'Explaining AI concepts',
-        'Code optimization techniques',
-        'Design patterns in software development',
-      ],
-    },
-    ar: {
-      overview: 'بناءً على تفاعلاتك، أنت متعلم فضولي لديك اهتمام قوي بالتكنولوجيا والبرمجة. تسأل بشكل متكرر عن تطوير الويب ومفاهيم الذكاء الاصطناعي وأفضل الممارسات في هندسة البرمجيات.',
-      interests: [
-        'تطوير الويب',
-        'الذكاء الاصطناعي',
-        'React و TypeScript',
-        'تصميم واجهة المستخدم',
-        'هندسة البرمجيات',
-      ],
-      commonQueries: [
-        'كيفية تنفيذ المصادقة في React؟',
-        'أفضل الممارسات لـ TypeScript',
-        'شرح مفاهيم الذكاء الاصطناعي',
-        'تقنيات تحسين الكود',
-        'أنماط التصميم في تطوير البرمجيات',
-      ],
-    },
-  };
+        if (user?.summary_id) {
+          summaryData = await chatService.getSummary(user.summary_id);
+        }
 
-  const currentSummary = isRTL ? aiSummary.ar : aiSummary.en;
+        if (!summaryData) {
+          const generateResponse = await chatService.generateSummary({ userId: user.id });
+          summaryData = generateResponse.summary;
+        }
+
+        setSummary(summaryData);
+      } catch (err) {
+        console.error('Failed to load summary:', err);
+        setError(t('profile.errorLoadingSummary'));
+      } finally {
+        setLoadingSummary(false);
+      }
+    };
+
+    fetchSummary();
+  }, [user, t]);
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-12">
@@ -72,15 +60,11 @@ const Profile: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">{t('profile.myProfile')}</h1>
-          <p className="text-muted-foreground">
-            {isRTL
-              ? 'عرض وإدارة معلومات ملفك الشخصي'
-              : 'View and manage your profile information'}
-          </p>
+          <p className="text-muted-foreground">{t('profile.profileDescription')}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Left Column - Profile Info */}
+          {/* Left Column */}
           <div className="md:col-span-1 space-y-6">
             {/* Profile Card */}
             <Card>
@@ -101,25 +85,20 @@ const Profile: React.FC = () => {
                 <CardTitle className="text-2xl">
                   {user?.first_name && user?.last_name
                     ? `${user.first_name} ${user.last_name}`
-                    : user?.username || 'User'}
+                    : user?.username || t('profile.userPlaceholder')}
                 </CardTitle>
-                <CardDescription>{user?.email || 'No email'}</CardDescription>
+                <CardDescription>{user?.email || t('profile.noEmail')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   variant="outline"
                   onClick={() => setIsEditDialogOpen(true)}
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   {t('profile.actions.editProfile')}
                 </Button>
-                
-                <Button 
-                  className="w-full" 
-                  variant="destructive"
-                  onClick={logout}
-                >
+                <Button className="w-full" variant="destructive" onClick={logout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   {t('navigation.logout')}
                 </Button>
@@ -129,7 +108,7 @@ const Profile: React.FC = () => {
             {/* Stats Card */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{isRTL ? 'الإحصائيات' : 'Statistics'}</CardTitle>
+                <CardTitle className="text-lg">{t('profile.stats.title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -137,14 +116,14 @@ const Profile: React.FC = () => {
                     <MessageSquare className="h-5 w-5 text-primary" />
                     <span className="text-sm">{t('profile.stats.totalChats')}</span>
                   </div>
-                  <span className="font-bold">{statsData.totalChats}</span>
+                  <span className="font-bold">{summary?.message_count}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Bot className="h-5 w-5 text-primary" />
                     <span className="text-sm">{t('profile.stats.favoriteModel')}</span>
                   </div>
-                  <span className="font-bold">{statsData.favoriteModel}</span>
+                  <span className="font-bold">{summary?.ai_model_used}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -152,10 +131,10 @@ const Profile: React.FC = () => {
                     <span className="text-sm">{t('profile.stats.memberSince')}</span>
                   </div>
                   <span className="font-bold text-sm">
-                    {user?.created_at 
-                      ? new Date(user.created_at).toLocaleDateString(isRTL ? 'ar' : 'en', { 
-                          year: 'numeric', 
-                          month: 'long' 
+                    {user?.created_at
+                      ? new Date(user.created_at).toLocaleDateString(isRTL ? 'ar' : 'en', {
+                          year: 'numeric',
+                          month: 'long',
                         })
                       : 'N/A'}
                   </span>
@@ -164,97 +143,91 @@ const Profile: React.FC = () => {
             </Card>
           </div>
 
-          {/* Right Column - AI Summary */}
+          {/* Right Column */}
           <div className="md:col-span-2 space-y-6">
-            {/* AI-Generated Summary */}
+            {/* AI Summary */}
             <Card className="border-primary/20">
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <Sparkles className="h-5 w-5 text-primary" />
                   <CardTitle>{t('profile.aiSummary')}</CardTitle>
                 </div>
-                <CardDescription>
-                  {isRTL
-                    ? 'ملخص تم إنشاؤه بواسطة الذكاء الاصطناعي بناءً على محادثاتك'
-                    : 'AI-generated insights based on your conversations'}
-                </CardDescription>
+                <CardDescription>{t('profile.aiSummaryDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-foreground leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {currentSummary.overview}
-                  </p>
-                </div>
+                {loadingSummary ? (
+                  <p>{t('profile.loading')}</p>
+                ) : error ? (
+                  <p className="text-red-500">{error}</p>
+                ) : summary ? (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="text-foreground leading-relaxed" dir={isRTL ? 'rtl' : 'ltr'}>
+                      {summary.summary_text}
+                    </p>
+                  </div>
+                ) : (
+                  <p>{t('profile.noSummary')}</p>
+                )}
               </CardContent>
             </Card>
 
             {/* Interests */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <CardTitle>{t('profile.interests')}</CardTitle>
-                </div>
-                <CardDescription>
-                  {isRTL
-                    ? 'المواضيع التي تتفاعل معها بشكل متكرر'
-                    : 'Topics you frequently engage with'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {currentSummary.interests.map((interest, index) => (
-                    <span
-                      key={index}
-                      className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"
-                    >
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {summary?.topics && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <CardTitle>{t('profile.interests')}</CardTitle>
+                  </div>
+                  <CardDescription>{t('profile.interestsDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {summary.topics.map((interest, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Common Queries */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <CardTitle>{t('profile.commonQueries')}</CardTitle>
-                </div>
-                <CardDescription>
-                  {isRTL
-                    ? 'أكثر الأسئلة التي تطرحها'
-                    : 'Your most frequent questions'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {currentSummary.commonQueries.map((query, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start space-x-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
-                      dir={isRTL ? 'rtl' : 'ltr'}
-                    >
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm">{query}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
-          
+            {summary?.common_queries && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    <CardTitle>{t('profile.commonQueries')}</CardTitle>
+                  </div>
+                  <CardDescription>{t('profile.commonQueriesDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {summary.common_queries.map((query, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start space-x-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                        dir={isRTL ? 'rtl' : 'ltr'}
+                      >
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </span>
+                        <span className="text-sm">{query}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* Edit Profile Dialog */}
-        <EditProfileDialog 
-          open={isEditDialogOpen} 
-          onOpenChange={setIsEditDialogOpen} 
-        />
+        <EditProfileDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
       </div>
     </div>
   );

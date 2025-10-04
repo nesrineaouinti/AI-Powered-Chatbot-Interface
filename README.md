@@ -4,7 +4,7 @@ A modern, production-ready full-stack AI chatbot application with **multi-langua
 
 **Status**: ✅ Complete & Production-Ready  
 **Stack**: Django REST + React + TypeScript  
-**Features**: 6 AI Models | Multi-Language | Real-Time Chat | Dark Mode | Google OAuth integration.
+**Features**: 3 AI Models | Multi-Language | Real-Time Chat | Google OAuth integration.
 
 ## ✨ Features
 
@@ -32,15 +32,13 @@ A modern, production-ready full-stack AI chatbot application with **multi-langua
 - Stored in database
 
 ### 🤖 AI Chatbot Features
-- **6 AI Models**: OpenAI, Gemini, DeepSeek, Grok, LLaMA, Mock
+- **6 AI Models**: Grok, LLaMA, Mock
 - **Automatic Fallback**: Priority-based model selection
 - **Multi-Language AI**: Responds in English or Arabic
 - **Real-Time Chat**: Beautiful, responsive interface
 - **Chat Management**: Create, archive, delete, search
 - **User Summaries**: AI-generated user profiles
 - **Message History**: Persistent conversation storage
-- **Dark Mode**: Full dark mode support
-
 ---
 
 ## 🚀 Quick Start
@@ -114,7 +112,8 @@ npm run dev
 
 ```
 AI-Powered-Chatbot-Interface/
-├── Back-end/                    # Django REST Framework API
+├── Back-end/       # Django REST Framework API
+│   ├── chatbot/              # Chatbot App
 │   ├── chatbot_backend/         # Main project settings
 │   ├── users/                   # Authentication app
 │   ├── manage.py
@@ -133,32 +132,6 @@ AI-Powered-Chatbot-Interface/
 │
 └── [Documentation files]
 ```
-
----
-
-## 📚 Documentation
-
-### Quick Start
-- **`QUICK_REFERENCE.md`** - ⚡ Quick reference guide
-- **`AI_CHATBOT_QUICK_START.md`** - 5-minute chatbot setup
-- **`QUICK_START_GOOGLE_OAUTH.md`** - Google OAuth setup
-
-### AI Chatbot
-- **`FULL_STACK_IMPLEMENTATION_SUMMARY.md`** - Complete implementation overview
-- **`FRONTEND_IMPLEMENTATION_GUIDE.md`** - Frontend guide
-- **`Back-end/AI_CHATBOT_API_DOCUMENTATION.md`** - API reference
-- **`ARCHITECTURE_OVERVIEW.md`** - System architecture
-
-### Authentication
-- **`GOOGLE_OAUTH_SETUP.md`** - Complete setup guide
-- **`GOOGLE_OAUTH_IMPLEMENTATION.md`** - Implementation details
-- **`COMPLETE_IMPLEMENTATION_SUMMARY.md`** - Feature overview
-
-### Backend
-- **`Back-end/README.md`** - Backend documentation
-- **`Back-end/SECURITY_DOCUMENTATION.md`** - Security guide
-- **`Back-end/API_TESTING_GUIDE.md`** - API testing
-- **`Back-end/test_api.sh`** - Automated API tests
 
 ---
 
@@ -202,31 +175,6 @@ python manage.py test users
 ```
 
 **Result**: 14 tests passing ✅
-
-### Manual API Testing
-
-**Register a user:**
-```bash
-curl -X POST http://localhost:8000/api/auth/signup/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "SecurePass123!",
-    "password_confirm": "SecurePass123!",
-    "language_preference": "en"
-  }'
-```
-
-**Login:**
-```bash
-curl -X POST http://localhost:8000/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username_or_email": "testuser",
-    "password": "SecurePass123!"
-  }'
-```
 
 ---
 
@@ -288,25 +236,6 @@ Language preference is:
 
 ---
 
-## 📊 Database Schema
-
-### User Model
-```python
-- username (unique)
-- email (unique)
-- password (hashed)
-- first_name
-- last_name
-- language_preference ('en' or 'ar')
-- google_id (unique, nullable)
-- profile_picture (URL, nullable)
-- is_oauth_user (boolean)
-- created_at
-- updated_at
-```
-
----
-
 ## 🎯 Configuration
 
 ### Backend Configuration
@@ -351,33 +280,6 @@ const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE';
 - Check browser console for errors
 
 **See full troubleshooting guide in**: `GOOGLE_OAUTH_SETUP.md`
-
----
-
-## 📈 What's Next?
-
-### Immediate
-- [x] JWT Authentication ✅
-- [x] Google OAuth ✅
-- [x] Language Preferences ✅
-- [x] Profile Management ✅
-
-### Optional Enhancements
-- [ ] Add GitHub OAuth
-- [ ] Add Facebook OAuth
-- [ ] Implement 2FA
-- [ ] Add email verification
-- [ ] Add password reset via email
-- [ ] Add rate limiting
-- [ ] Add audit logging
-
-### Production Deployment
-- [ ] Move to PostgreSQL
-- [ ] Enable HTTPS
-- [ ] Set up environment variables
-- [ ] Configure production domain
-- [ ] Set up monitoring
-- [ ] Deploy to cloud provider
 
 ---
 

@@ -29,8 +29,8 @@ interface EditProfileDialogProps {
 
 const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChange }) => {
   const { user, updateProfile } = useAuth();
-  const { isRTL } = useLanguage();
-  
+  const { t, isRTL } = useLanguage();
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -38,12 +38,12 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
     last_name: '',
     language_preference: 'en' as 'en' | 'ar',
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Initialize form data when user data is available
+  // Initialize form data when user is available
   useEffect(() => {
     if (user) {
       setFormData({
@@ -56,7 +56,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
     }
   }, [user]);
 
-  // Reset form when dialog closes
+  // Reset when dialog closes
   useEffect(() => {
     if (!open) {
       setError(null);
@@ -82,46 +82,37 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
     setSuccess(false);
 
     try {
-      // Only send changed fields
       const updates: any = {};
       if (formData.username !== user?.username) updates.username = formData.username;
       if (formData.email !== user?.email) updates.email = formData.email;
       if (formData.first_name !== user?.first_name) updates.first_name = formData.first_name;
       if (formData.last_name !== user?.last_name) updates.last_name = formData.last_name;
-      if (formData.language_preference !== user?.language_preference) {
+      if (formData.language_preference !== user?.language_preference)
         updates.language_preference = formData.language_preference;
-      }
 
       if (Object.keys(updates).length === 0) {
-        setError(isRTL ? 'لم يتم إجراء أي تغييرات' : 'No changes made');
+        setError(t('profile.noChanges'));
         setLoading(false);
         return;
       }
 
       await updateProfile(updates);
       setSuccess(true);
-      
-      // Close dialog after successful update
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 1500);
+
+      setTimeout(() => onOpenChange(false), 1500);
     } catch (err: any) {
       console.error('Profile update error:', err);
-      let errorMessage = isRTL ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile';
-      
+      let errorMessage = t('profile.updateFailed');
+
       try {
         const errorData = JSON.parse(err.message);
-        if (errorData.username) {
-          errorMessage = isRTL ? 'اسم المستخدم مستخدم بالفعل' : 'Username already taken';
-        } else if (errorData.email) {
-          errorMessage = isRTL ? 'البريد الإلكتروني مستخدم بالفعل' : 'Email already in use';
-        } else if (typeof errorData === 'object') {
-          errorMessage = Object.values(errorData)[0] as string;
-        }
+        if (errorData.username) errorMessage = t('profile.usernameTaken');
+        else if (errorData.email) errorMessage = t('profile.emailTaken');
+        else if (typeof errorData === 'object') errorMessage = Object.values(errorData)[0] as string;
       } catch {
         errorMessage = err.message || errorMessage;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -132,29 +123,21 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]" dir={isRTL ? 'rtl' : 'ltr'}>
         <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}
-          </DialogTitle>
-          <DialogDescription>
-            {isRTL
-              ? 'قم بتحديث معلومات ملفك الشخصي هنا. انقر فوق حفظ عند الانتهاء.'
-              : 'Update your profile information here. Click save when you\'re done.'}
-          </DialogDescription>
+          <DialogTitle className="text-2xl">{t('profile.editTitle')}</DialogTitle>
+          <DialogDescription>{t('profile.editDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">
-                {isRTL ? 'اسم المستخدم' : 'Username'}
-              </Label>
+              <Label htmlFor="username">{t('profile.username')}</Label>
               <Input
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder={isRTL ? 'أدخل اسم المستخدم' : 'Enter username'}
+                placeholder={t('profile.usernamePlaceholder')}
                 disabled={loading}
                 required
               />
@@ -162,16 +145,14 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">
-                {isRTL ? 'البريد الإلكتروني' : 'Email'}
-              </Label>
+              <Label htmlFor="email">{t('profile.email')}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder={isRTL ? 'أدخل البريد الإلكتروني' : 'Enter email'}
+                placeholder={t('profile.emailPlaceholder')}
                 disabled={loading}
                 required
               />
@@ -179,39 +160,33 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
 
             {/* First Name */}
             <div className="space-y-2">
-              <Label htmlFor="first_name">
-                {isRTL ? 'الاسم الأول' : 'First Name'}
-              </Label>
+              <Label htmlFor="first_name">{t('profile.firstName')}</Label>
               <Input
                 id="first_name"
                 name="first_name"
                 value={formData.first_name}
                 onChange={handleInputChange}
-                placeholder={isRTL ? 'أدخل الاسم الأول' : 'Enter first name'}
+                placeholder={t('profile.firstNamePlaceholder')}
                 disabled={loading}
               />
             </div>
 
             {/* Last Name */}
             <div className="space-y-2">
-              <Label htmlFor="last_name">
-                {isRTL ? 'اسم العائلة' : 'Last Name'}
-              </Label>
+              <Label htmlFor="last_name">{t('profile.lastName')}</Label>
               <Input
                 id="last_name"
                 name="last_name"
                 value={formData.last_name}
                 onChange={handleInputChange}
-                placeholder={isRTL ? 'أدخل اسم العائلة' : 'Enter last name'}
+                placeholder={t('profile.lastNamePlaceholder')}
                 disabled={loading}
               />
             </div>
 
             {/* Language Preference */}
             <div className="space-y-2">
-              <Label htmlFor="language_preference">
-                {isRTL ? 'تفضيل اللغة' : 'Language Preference'}
-              </Label>
+              <Label htmlFor="language_preference">{t('profile.languagePreference')}</Label>
               <Select
                 value={formData.language_preference}
                 onValueChange={handleLanguageChange}
@@ -221,13 +196,13 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="ar">العربية</SelectItem>
+                  <SelectItem value="en">{t('languages.english')}</SelectItem>
+                  <SelectItem value="ar">{t('languages.arabic')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Error Alert */}
+            {/* Error */}
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -235,35 +210,31 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onOpenChang
               </Alert>
             )}
 
-            {/* Success Alert */}
+            {/* Success */}
             {success && (
               <Alert className="border-green-500 text-green-600 dark:text-green-400">
-                <AlertDescription>
-                  {isRTL
-                    ? 'تم تحديث الملف الشخصي بنجاح!'
-                    : 'Profile updated successfully!'}
-                </AlertDescription>
+                <AlertDescription>{t('profile.updateSuccess')}</AlertDescription>
               </Alert>
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter >
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              {isRTL ? 'إلغاء' : 'Cancel'}
+              {t('profile.actions.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isRTL ? 'جاري الحفظ...' : 'Saving...'}
+                  {t('profile.actions.saving')}
                 </>
               ) : (
-                isRTL ? 'حفظ التغييرات' : 'Save Changes'
+                t('profile.actions.saveChanges')
               )}
             </Button>
           </DialogFooter>

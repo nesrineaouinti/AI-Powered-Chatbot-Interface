@@ -181,7 +181,24 @@ export interface Translations {
     network: string;
     unauthorized: string;
     notFound: string;
-    validation: string;
+    validation: {
+      required: string;
+      email: string;
+      username: {
+        min: string;
+        max: string;
+        pattern: string;
+      };
+      password: {
+        min: string;
+        max: string;
+        uppercase: string;
+        lowercase: string;
+        number: string;
+        special: string;
+      };
+      passwordMatch: string;
+    };
     serverError: string;
     timeout: string;
     invalidCredentials: string;

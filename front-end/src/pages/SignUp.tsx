@@ -15,7 +15,7 @@ import { signUpSchema, type SignUpFormData } from '@/schemas/authSchemas';
 const SignUp: React.FC = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { signup, googleLogin, loading } = useAuth();
+  const { signup, googleLogin, submitting } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -142,8 +142,8 @@ const SignUp: React.FC = () => {
               </div>
 
               {/* Submit */}
-              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || loading}>
-                {(isSubmitting || loading) ? t('auth.signUp.creating') : t('auth.signUp.button')}
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || submitting}>
+                {(isSubmitting || submitting) ? t('auth.signUp.creating') : t('auth.signUp.button')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 

@@ -93,50 +93,51 @@ class UserLoginView(APIView):
     """
     permission_classes = [permissions.AllowAny]
     
+    @method_decorator(ratelimit(key='ip', rate='10/h', method='POST', block=True))
     def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
-        
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        username_or_email = serializer.validated_data['username_or_email']
-        password = serializer.validated_data['password']
-        
-        # Try to find user by username or email
         try:
-            user = User.objects.get(
-                Q(username=username_or_email) | Q(email=username_or_email)
+            serializer = UserLoginSerializer(data=request.data)
+            
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            username_or_email = serializer.validated_data['username_or_email']
+            password = serializer.validated_data['password']
+            
+            # Try to find user by username or email
+            try:
+                user = User.objects.get(
+                    Q(username=username_or_email) | Q(email=username_or_email)
+                )
+            except User.DoesNotExist:
+                return Response({'error': 'Invalid credentials'}, status=401)
+            
+            # Authenticate user
+            user = authenticate(username=user.username, password=password)
+            
+            if user is None:
+                return Response({'error': 'Invalid credentials'}, status=401)
+            
+            if not user.is_active:
+                return Response({'error': 'Account is disabled'}, status=401)
+            
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'Login successful',
+                'user': UserSerializer(user).data,
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            }, status=200)
+        
+        except Ratelimited:
+            return Response(
+                {'error': 'Too many login attempts. Please try again later.'},
+                status=429
             )
-        except User.DoesNotExist:
-            return Response({
-                'error': 'Invalid credentials'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # Authenticate user
-        user = authenticate(username=user.username, password=password)
-        
-        if user is None:
-            return Response({
-                'error': 'Invalid credentials'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        if not user.is_active:
-            return Response({
-                'error': 'Account is disabled'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'message': 'Login successful',
-            'user': UserSerializer(user).data,
-            'tokens': {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-        }, status=status.HTTP_200_OK)
-
 
 class UserLogoutView(APIView):
     """
