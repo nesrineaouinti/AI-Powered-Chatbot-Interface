@@ -219,8 +219,6 @@ curl -X GET http://localhost:8000/api/auth/profile/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-For detailed API testing instructions, see [API_TESTING_GUIDE.md](API_TESTING_GUIDE.md)
-
 ## 🤖 Chatbot Models & Features
 
 ### Chat Model

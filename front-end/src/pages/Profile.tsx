@@ -7,7 +7,6 @@ import EditProfileDialog from '@/components/EditProfileDialog';
 import {
   User,
   MessageSquare,
-  Bot,
   Calendar,
   TrendingUp,
   LogOut,
@@ -118,13 +117,7 @@ const Profile: React.FC = () => {
                   </div>
                   <span className="font-bold">{summary?.message_count}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Bot className="h-5 w-5 text-primary" />
-                    <span className="text-sm">{t('profile.stats.favoriteModel')}</span>
-                  </div>
-                  <span className="font-bold">{summary?.ai_model_used}</span>
-                </div>
+                
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Calendar className="h-5 w-5 text-primary" />
