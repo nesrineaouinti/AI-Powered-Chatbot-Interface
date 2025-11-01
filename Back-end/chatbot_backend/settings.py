@@ -15,8 +15,9 @@ from datetime import timedelta
 from decouple import config, Csv
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project like this: BASE_DIR / 'subdir'.BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -217,14 +218,23 @@ GOOGLE_OAUTH_CLIENT_ID = config(
 RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=True, cast=bool)
 RATELIMIT_USE_CACHE = config('RATELIMIT_USE_CACHE', default='default')
 
-# AI Model Configuration
-# API Keys for different AI models (store in environment variables in production)
+# LangChain Configuration
+# Groq settings for LangChain (primary provider)
 GROQ_API_KEY = config('GROQ_API_KEY', default='')
+GROQ_MODEL = config('GROQ_MODEL', default='llama-3.3-70b-versatile')
+GROQ_TEMPERATURE = config('GROQ_TEMPERATURE', default=0.7, cast=float)
 
-# AI Model Endpoints
-GROQ_API_ENDPOINT = config('GROQ_API_ENDPOINT', default='https://api.groq.com/openai/v1/chat/completions')
-OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
-LLAMA_API_ENDPOINT = config('LLAMA_API_ENDPOINT', default=f'{OLLAMA_BASE_URL}/api/chat')
+# LangChain provider settings
+LANGCHAIN_DEFAULT_PROVIDER = config('LANGCHAIN_DEFAULT_PROVIDER', default='groq')
+
+# Document Processing settings
+SUPPORTED_DOCUMENT_TYPES = ['.pdf', '.docx', '.txt']
+MAX_DOCUMENT_SIZE = config('MAX_DOCUMENT_SIZE', default=10485760, cast=int)  # 10MB in bytes
+
+# RAG (Retrieval-Augmented Generation) settings
+RAG_ENABLED = config('RAG_ENABLED', default=True, cast=bool)
+RAG_SIMILARITY_TOP_K = config('RAG_SIMILARITY_TOP_K', default=4, cast=int)
+RAG_SCORE_THRESHOLD = config('RAG_SCORE_THRESHOLD', default=0.7, cast=float)
 
 # Logging Configuration
 LOGGING = {

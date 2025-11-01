@@ -101,22 +101,34 @@ class ChatViewSet(viewsets.ModelViewSet):
                 content=content,
                 language=language
             )
-            
-            # Get conversation history (last 10 messages for context)
+
+            # ------------------------------
+            # 1️⃣ Get last 10 messages for context
+            # ------------------------------
             history = Message.objects.filter(chat=chat).order_by('-created_at')[:10]
             messages_for_ai = [
                 {"role": msg.role, "content": msg.content}
                 for msg in reversed(history)
             ]
-            
-            # Generate AI response
+
+            # ------------------------------
+            # 5️⃣ Generate AI response
+            # ------------------------------
             response_text, model_used, tokens_used, response_time = AIService.generate_response(
                 messages=messages_for_ai,
                 language=language,
-                preferred_model=preferred_model
+                preferred_model="llama-3.3-70b-versatile"
             )
-            
-            # Save AI response
+
+            # ------------------------------
+            # 2️⃣ Add message to Chroma for semantic memory
+            # ------------------------------
+            AIService.add_document(content)
+            # ------------------------------
+      
+            # ------------------------------
+            # 6️⃣ Save AI response
+            # ------------------------------
             ai_message = Message.objects.create(
                 chat=chat,
                 role='assistant',
@@ -126,19 +138,23 @@ class ChatViewSet(viewsets.ModelViewSet):
                 tokens_used=tokens_used,
                 response_time=response_time
             )
-            
-            # Update chat title if it's the first message
+
+            # ------------------------------
+            # 7️⃣ Update chat title if it's the first message
+            # ------------------------------
             if not chat.title:
                 chat.title = content[:50] + ('...' if len(content) > 50 else '')
                 chat.save()
-            
-            # Return both messages
+
+            # ------------------------------
+            # 8️⃣ Return both messages
+            # ------------------------------
             return Response({
                 'user_message': MessageSerializer(user_message).data,
                 'ai_message': MessageSerializer(ai_message).data,
                 'model_used': model_used
             }, status=status.HTTP_201_CREATED)
-            
+
         except AIServiceException as e:
             logger.error(f"AI service error: {str(e)}")
             return Response(
@@ -151,7 +167,7 @@ class ChatViewSet(viewsets.ModelViewSet):
                 {'error': 'An unexpected error occurred'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
+            
     @action(detail=True, methods=['post'])
     def archive(self, request, pk=None):
         """

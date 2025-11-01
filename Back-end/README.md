@@ -219,19 +219,169 @@ curl -X GET http://localhost:8000/api/auth/profile/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
+## 🔗 LangChain Integration
+
+The backend now supports **LangChain** - a powerful framework for developing applications powered by language models. This integration provides advanced capabilities including document processing, vector stores, and sophisticated chain configurations.
+
+### 🤖 LangChain Features
+
+#### **Multiple LLM Providers**
+- **OpenAI** - GPT models via OpenAI API
+- **Groq** - Ultra-fast inference with Llama models
+- **HuggingFace** - Open-source models via HuggingFace
+
+#### **Vector Store & RAG**
+- **Document Upload** - Support for PDF, DOCX, TXT files
+- **Vector Storage** - Chroma-based persistent storage
+- **Retrieval-Augmented Generation** - Context-aware responses
+- **Document Querying** - Natural language document search
+
+#### **Advanced Chain Types**
+- **Conversation Chains** - Basic chat interactions
+- **Customer Support** - Empathetic, solution-oriented responses
+- **Technical Support** - Step-by-step technical guidance
+- **Creative Writing** - Imaginative content generation
+- **Groq Optimized** - Fast, concise responses leveraging Groq's speed
+
+### 🚀 LangChain API Endpoints
+
+#### Document Management
+```bash
+# Upload document for RAG
+POST /api/documents/upload/
+Content-Type: multipart/form-data
+- file: (PDF/DOCX/TXT file)
+- metadata: (optional JSON string)
+
+# Query documents with RAG
+POST /api/documents/query/
+{
+  "query": "What is the main topic?",
+  "language": "en",
+  "top_k": 4
+}
+
+# List document information
+GET /api/documents/list/
+```
+
+#### Enhanced Chat Messages
+```bash
+# Use LangChain with RAG
+POST /api/chats/{id}/send_message/
+{
+  "content": "Summarize this document",
+  "use_langchain": true,
+  "use_rag": true,
+  "chain_type": "conversation"
+}
+
+# Use Groq with optimized chain
+POST /api/chats/{id}/send_message/
+{
+  "content": "Quick question",
+  "use_langchain": true,
+  "chain_type": "groq_optimized"
+}
+```
+
+### ⚙️ LangChain Configuration
+
+#### Environment Variables
+```bash
+# Default LLM Provider (openai, groq, huggingface)
+LANGCHAIN_DEFAULT_PROVIDER=groq
+
+# OpenAI Settings
+OPENAI_API_KEY=your-openai-key
+OPENAI_MODEL=gpt-3.5-turbo
+
+# Groq Settings (Recommended)
+GROQ_API_KEY=your-groq-key
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Vector Store
+VECTOR_STORE_TYPE=chroma
+RAG_ENABLED=true
+```
+
+#### Supported Chain Types
+- `conversation` - Standard chat interactions
+- `customer_support` - Customer service scenarios
+- `technical_support` - Technical assistance
+- `creative_writing` - Content creation
+- `groq_optimized` - Fast, concise responses
+
+### 🔧 LangChain Architecture
+
+#### Core Components
+1. **LangChainService** - Main service class managing LLMs and vector stores
+2. **Prompt Templates** - Reusable prompt configurations
+3. **Chain Manager** - Advanced conversation chains
+4. **Vector Store** - Document storage and retrieval
+
+#### Integration Points
+- **AI Service** - Extended with LangChain providers
+- **Views** - Enhanced with LangChain options
+- **Models** - Compatible with existing data structures
+
+## 🚀 Groq Integration
+
+**Groq** provides ultra-fast LLM inference, making it ideal for real-time chatbot applications. The backend integrates Groq through LangChain for optimal performance.
+
+### ⚡ Groq Benefits
+- **Speed** - Sub-second response times
+- **Cost** - Free tier available
+- **Quality** - High-quality Llama model responses
+- **Reliability** - Stable API with good uptime
+
+### 🛠️ Groq Setup
+
+1. **Get API Key**: https://console.groq.com/keys
+2. **Set Environment Variable**:
+   ```bash
+   GROQ_API_KEY=your-groq-api-key-here
+   ```
+3. **Configure Model**:
+   ```bash
+   GROQ_MODEL=llama-3.3-70b-versatile
+   ```
+
+### 📊 Performance Comparison
+
+| Provider | Speed | Cost | Quality | Use Case |
+|----------|-------|------|---------|----------|
+| **Groq** | ⚡ Ultra-fast | 💰 Free tier | ⭐ High | Real-time chat |
+| **OpenAI** | 🐌 Standard | 💰 Pay-per-use | ⭐ Very High | Complex tasks |
+| **HuggingFace** | 🐢 Variable | 💰 Free | ⭐ Variable | Open-source |
+
+### 🔄 Migration Guide
+
+#### From Traditional to LangChain
+```python
+# Before (Traditional AI Service)
+response, model, tokens, time = AIService.generate_response(
+    messages=messages,
+    language='en',
+    preferred_model='groq'
+)
+
+# After (LangChain with Groq)
+response, metadata = langchain_service.generate_response(
+    messages=messages,
+    language='en',
+    use_rag=False  # or True for document queries
+)
+```
+
+#### Chain Type Selection
+- **Default**: `conversation` - General chat
+- **Speed**: `groq_optimized` - Fast responses
+- **Support**: `customer_support` - Service scenarios
+- **Technical**: `technical_support` - Complex queries
+- **Creative**: `creative_writing` - Content generation
+
 ## 🤖 Chatbot Models & Features
-
-### Chat Model
-- **ID**: Unique identifier for each chat
-- **User**: Foreign key to authenticated user
-- **Title**: Chat title (auto-generated from first message if empty)
-- **Language**: Chat language (English 'en' or Arabic 'ar')
-- **Timestamps**: Created and updated timestamps
-- **Archive Status**: Boolean flag for archived chats
-- **Message Count**: Total number of messages in chat
-
-### Message Model
-- **ID**: Unique identifier for each message
 - **Chat**: Foreign key to parent chat
 - **Role**: Message type ('user', 'assistant', 'system')
 - **Content**: Message text content

@@ -60,8 +60,20 @@ AI-Powered-Chatbot-Interface/
 
 ## 🛠️ Tech Stack
 
-**Backend**: Django, Django REST Framework, JWT, Google Auth
+**Backend**: Django, Django REST Framework, JWT, Google Auth  
+**AI/ML**: LangChain, OpenAI  
 **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+
+## 🤖 LangChain Integration
+
+This project leverages LangChain to power its conversational AI capabilities:
+
+- **Conversation Memory**: Maintains context across chat sessions
+- **Chain of Thought**: Enables more coherent and context-aware responses
+- **Model Integration**: Seamlessly connects with various AI models (Groq, Llama, etc.)
+- **Prompt Management**: Handles complex prompt templates and chaining
+- **RAG (Retrieval-Augmented Generation)**: Enhances responses with relevant context
+- **Multi-turn Conversations**: Maintains conversation history for better context understanding
 
 ## 📝 Notes
 
