@@ -225,3 +225,60 @@ class AIService:
         except Exception as e:
             logger.error(f"❌ AIService error: {e}")
             raise AIServiceException(str(e))
+    
+    @staticmethod
+    def generate_user_summary(user_messages: list, language: str = "en") -> str:
+        """
+        Generate a user summary from their message history.
+        
+        Args:
+            user_messages: List of user message texts
+            language: Language for the summary ('en' or 'ar')
+        
+        Returns:
+            JSON string with structure:
+            {
+                "summary": "User summary text",
+                "topics": ["topic1", "topic2"],
+                "Common queries": ["query1", "query2"]
+            }
+        """
+        try:
+            # Combine messages into context
+            messages_context = "\n".join(user_messages[:50])  # Limit to last 50 messages
+            
+            # Create prompt for summary generation
+            prompt = f"""Based on the following user messages, generate a comprehensive summary in {language}.
+            
+User Messages:
+{messages_context}
+
+Generate a JSON response with:
+1. summary: A brief summary of the user's interests and conversation patterns
+2. topics: List of main topics the user discusses
+3. Common queries: List of common questions or requests
+
+Respond ONLY with valid JSON in this exact format:
+{{
+    "summary": "...",
+    "topics": ["topic1", "topic2", ...],
+    "Common queries": ["query1", "query2", ...]
+}}"""
+
+            # Use the AI model to generate summary
+            model = ChatGroq(
+                model="llama-3.3-70b-versatile",
+                api_key=os.getenv("GROQ_API_KEY"),
+                temperature=0.5,  # Lower temperature for more consistent output
+                max_tokens=1000,
+            )
+            
+            response = model.invoke(prompt)
+            content = getattr(response, "content", str(response))
+            
+            logger.info(f"✅ Generated user summary for {len(user_messages)} messages")
+            return content
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating user summary: {e}")
+            raise AIServiceException(str(e))

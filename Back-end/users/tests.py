@@ -173,7 +173,12 @@ class LanguagePreferenceTests(APITestCase):
             'language_preference': 'ar'
         }
         response = self.client.post(self.signup_url, payload, format='json')
+        # Debug: print response if it fails
+        if response.status_code != status.HTTP_201_CREATED:
+            print(f"Response status: {response.status_code}")
+            print(f"Response data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['language_preference'], 'ar')
     
     def test_language_persists_after_login(self):
@@ -193,4 +198,6 @@ class LanguagePreferenceTests(APITestCase):
             'password': 'TestPass123!'
         }
         response = self.client.post(login_url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['language_preference'], 'ar')

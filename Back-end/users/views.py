@@ -112,8 +112,8 @@ class UserLoginView(APIView):
             except User.DoesNotExist:
                 return Response({'error': 'Invalid credentials'}, status=401)
             
-            # Authenticate user
-            user = authenticate(username=user.username, password=password)
+            # Authenticate user - use email since that's the USERNAME_FIELD
+            user = authenticate(username=user.email, password=password)
             
             if user is None:
                 return Response({'error': 'Invalid credentials'}, status=401)

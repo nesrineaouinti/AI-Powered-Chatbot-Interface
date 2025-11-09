@@ -10,8 +10,8 @@ from .views import ChatViewSet, MessageViewSet, UserSummaryViewSet, AIModelViewS
 router = DefaultRouter()
 router.register(r'chats', ChatViewSet, basename='chat')
 router.register(r'messages', MessageViewSet, basename='message')
-router.register(r'summaries', UserSummaryViewSet, basename='summary')
-router.register(r'ai-models', AIModelViewSet, basename='ai-model')
+router.register(r'summaries', UserSummaryViewSet, basename='usersummary')
+router.register(r'ai-models', AIModelViewSet, basename='aimodelconfig')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -1,5 +1,8 @@
 # 🤖 AI-Powered Chatbot Interface
 
+![CI Pipeline](https://github.com/YOUR_USERNAME/AI-Powered-Chatbot-Interface/actions/workflows/ci.yml/badge.svg)
+![Tests](https://github.com/YOUR_USERNAME/AI-Powered-Chatbot-Interface/actions/workflows/test.yml/badge.svg)
+
 A modern full-stack AI chatbot application with multi-language support (English & Arabic), multiple AI models, and secure authentication.
 
 ## ✨ Key Features
