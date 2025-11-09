@@ -137,7 +137,7 @@ describe('ChatInput', () => {
   })
 
   it.skip('should disable input when sending message', () => {
-    ;(ChatContext.useChat as any).mockReturnValue({
+    (ChatContext.useChat as any).mockReturnValue({
       currentChat: mockChat,
       sendMessage: mockSendMessage,
       isSendingMessage: true,
@@ -154,7 +154,7 @@ describe('ChatInput', () => {
   })
 
   it.skip('should show loading spinner when sending', () => {
-    ;(ChatContext.useChat as any).mockReturnValue({
+    (ChatContext.useChat as any).mockReturnValue({
       currentChat: mockChat,
       sendMessage: mockSendMessage,
       isSendingMessage: true,
@@ -177,7 +177,7 @@ describe('ChatInput', () => {
   })
 
   it('should not submit when no current chat', async () => {
-    ;(ChatContext.useChat as any).mockReturnValue({
+    (ChatContext.useChat as any).mockReturnValue({
       currentChat: null,
       sendMessage: mockSendMessage,
       isSendingMessage: false,
@@ -218,7 +218,7 @@ describe('ChatInput', () => {
   })
 
   it.skip('should set text direction based on language', () => {
-    ;(LanguageContext.useLanguage as any).mockReturnValue({
+    (LanguageContext.useLanguage as any).mockReturnValue({
       language: 'ar',
       t: mockT,
     })

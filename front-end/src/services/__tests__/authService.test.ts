@@ -114,7 +114,7 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should successfully logout', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ message: 'Logged out successfully' }),
       })
@@ -135,7 +135,7 @@ describe('AuthService', () => {
 
   describe('getProfile', () => {
     it('should get user profile', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockUser,
       })
@@ -228,7 +228,7 @@ describe('AuthService', () => {
     })
 
     it('should check if user is authenticated', () => {
-      ;(localStorage.getItem as any).mockReturnValueOnce(null)
+      (localStorage.getItem as any).mockReturnValueOnce(null)
       expect(authService.isAuthenticated()).toBe(false)
 
       ;(localStorage.getItem as any).mockReturnValueOnce('some-token')

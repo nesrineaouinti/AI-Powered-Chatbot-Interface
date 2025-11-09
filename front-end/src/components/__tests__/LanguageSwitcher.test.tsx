@@ -84,7 +84,7 @@ describe('LanguageSwitcher', () => {
   })
 
   it.skip('should sync language with backend when authenticated', async () => {
-    ;(AuthContext.useAuth as any).mockReturnValue({
+    (AuthContext.useAuth as any).mockReturnValue({
       isAuthenticated: true,
       updateLanguage: mockUpdateLanguage,
     })
@@ -123,7 +123,7 @@ describe('LanguageSwitcher', () => {
   })
 
   it.skip('should show check mark for current language', async () => {
-    ;(LanguageContext.useLanguage as any).mockReturnValue({
+    (LanguageContext.useLanguage as any).mockReturnValue({
       language: 'ar',
       setLanguage: mockSetLanguage,
       t: (key: string) => key,
@@ -141,7 +141,7 @@ describe('LanguageSwitcher', () => {
   })
 
   it.skip('should handle backend sync errors gracefully', async () => {
-    ;(AuthContext.useAuth as any).mockReturnValue({
+    (AuthContext.useAuth as any).mockReturnValue({
       isAuthenticated: true,
       updateLanguage: mockUpdateLanguage,
     })

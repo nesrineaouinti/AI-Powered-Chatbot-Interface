@@ -59,7 +59,7 @@ describe('ChatService', () => {
 
   describe('getChat', () => {
     it('should get a specific chat with messages', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockChatDetail,
       })
@@ -124,7 +124,7 @@ describe('ChatService', () => {
 
   describe('deleteChat', () => {
     it('should delete a chat', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
       })
 
@@ -139,7 +139,7 @@ describe('ChatService', () => {
     })
 
     it('should throw error on failed delete', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ detail: 'Not found' }),
       })
@@ -206,7 +206,7 @@ describe('ChatService', () => {
 
   describe('getStatistics', () => {
     it('should get chat statistics', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockStatistics,
       })
@@ -238,7 +238,7 @@ describe('ChatService', () => {
 
   describe('getSummary', () => {
     it('should get a specific summary', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockUserSummary,
       })
@@ -328,7 +328,7 @@ describe('ChatService', () => {
 
   describe('chatExists', () => {
     it('should return true if chat exists', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockChatDetail,
       })
@@ -339,7 +339,7 @@ describe('ChatService', () => {
     })
 
     it('should return false if chat does not exist', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ detail: 'Not found' }),
       })
