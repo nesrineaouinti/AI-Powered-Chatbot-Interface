@@ -8,8 +8,11 @@ export const mockUser = {
   email: 'test@example.com',
   first_name: 'Test',
   last_name: 'User',
-  language_preference: 'en',
+  language_preference: 'en' as const,
+  is_oauth_user: false,
   created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+  summary_id: 1,
 }
 
 export const mockChat = {
